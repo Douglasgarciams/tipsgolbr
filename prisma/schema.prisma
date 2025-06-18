@@ -1,0 +1,47 @@
+// prisma/schema.prisma --- VERSÃO COMPLETA E CORRIGIDA
+
+// Enums (Listas de opções)
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Configuração do Prisma Client
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Configuração da Conexão com o Banco de Dados (O bloco que estava faltando)
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// Modelo da Tabela de Usuários
+model User {
+  id                      Int                 @id @default(autoincrement())
+  email                   String              @unique
+  password                String
+  role                    Role                @default(USER)
+  subscriptionStatus      SubscriptionStatus  @default(INACTIVE)
+  subscriptionExpiresAt   DateTime?
+  criadoEm                DateTime            @default(now())
+}
+
+// Modelo da Tabela de Palpites
+model Palpite {
+  id         Int      @id @default(autoincrement())
+  esporte    String
+  competicao String
+  jogo       String
+  dataHora   DateTime
+  palpite    String
+  link       String
+  criadoEm   DateTime @default(now())
+}
