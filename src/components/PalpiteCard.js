@@ -70,7 +70,7 @@ export default function PalpiteCard({ palpite }) {
           {/* O conteúdo da análise que só aparece se 'analiseAberta' for true */}
           {analiseAberta && (
             <div className="mt-2 text-sm text-gray-300 bg-gray-700 p-3 rounded-md">
-              <p className="italic">"{palpite.analise}"</p>
+              <p className="italic">{`"${palpite.analise}"`}</p>
             </div>
           )}
         </div>
