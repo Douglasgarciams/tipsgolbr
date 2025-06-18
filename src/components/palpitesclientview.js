@@ -1,5 +1,3 @@
-// src/components/PalpitesClientView.js
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -8,28 +6,18 @@ import PalpiteCard from '@/components/PalpiteCard';
 const agruparPalpites = (palpites) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
-
     const amanha = new Date(hoje);
     amanha.setDate(hoje.getDate() + 1);
-
     const depoisDeAmanha = new Date(hoje);
     depoisDeAmanha.setDate(hoje.getDate() + 2);
-
     const grupos = { hoje: [], amanha: [], proximosDias: [], resultados: [] };
-
     palpites.forEach(p => {
         const dataPalpite = new Date(p.dataHora);
-        if (dataPalpite < hoje) {
-            grupos.resultados.push(p);
-        } else if (dataPalpite >= hoje && dataPalpite < amanha) {
-            grupos.hoje.push(p);
-        } else if (dataPalpite >= amanha && dataPalpite < depoisDeAmanha) {
-            grupos.amanha.push(p);
-        } else {
-            grupos.proximosDias.push(p);
-        }
+        if (dataPalpite < hoje) { grupos.resultados.push(p); }
+        else if (dataPalpite >= hoje && dataPalpite < amanha) { grupos.hoje.push(p); }
+        else if (dataPalpite >= amanha && dataPalpite < depoisDeAmanha) { grupos.amanha.push(p); }
+        else { grupos.proximosDias.push(p); }
     });
-
     grupos.resultados.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
     return grupos;
 };
@@ -44,41 +32,29 @@ const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
     );
 };
 
-
 export default function PalpitesClientView({ palpites }) {
     const [filtroAtivo, setFiltroAtivo] = useState('Todos');
-
     const competicoes = useMemo(() => {
         const lista = palpites.map(p => p.competicao);
         return ['Todos', ...new Set(lista)];
     }, [palpites]);
-
     const palpitesFiltrados = useMemo(() => {
-        if (filtroAtivo === 'Todos') {
-            return palpites;
-        }
+        if (filtroAtivo === 'Todos') return palpites;
         return palpites.filter(p => p.competicao === filtroAtivo);
     }, [filtroAtivo, palpites]);
-
     const palpitesAgrupados = agruparPalpites(palpitesFiltrados);
-
     return (
         <div>
             <div className="mb-10">
                 <h2 className="text-xl font-bold text-white mb-4">Filtrar por Competição:</h2>
                 <div className="flex flex-wrap gap-2">
                     {competicoes.map(comp => (
-                        <button
-                            key={comp}
-                            onClick={() => setFiltroAtivo(comp)}
-                            className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${filtroAtivo === comp ? 'bg-green-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}
-                        >
+                        <button key={comp} onClick={() => setFiltroAtivo(comp)} className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${filtroAtivo === comp ? 'bg-green-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
                             {comp}
                         </button>
                     ))}
                 </div>
             </div>
-
             {palpitesFiltrados.length === 0 ? (
                 <p className="text-center text-gray-400 text-xl">Nenhum palpite encontrado para o filtro selecionado.</p>
             ) : (
