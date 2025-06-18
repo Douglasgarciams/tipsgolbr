@@ -23,22 +23,26 @@ export async function GET() {
 export async function POST(request) {
   try {
     const data = await request.json();
+
     const novoPalpite = await prisma.palpite.create({
       data: {
-        esporte: data.esporte,
+        // Campos antigos
         competicao: data.competicao,
         jogo: data.jogo,
         dataHora: new Date(data.dataHora),
         palpite: data.palpite,
         link: data.link,
+        // Novos campos que estávamos ignorando
+        odds: data.odds,
+        confianca: data.confianca,
+        analise: data.analise,
+        resultado: data.resultado,
+        placar: data.placar,
       },
     });
     return NextResponse.json(novoPalpite, { status: 201 });
   } catch (error) {
     console.error("Erro ao criar palpite:", error);
-    return NextResponse.json(
-      { message: "Erro ao criar palpite" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Erro ao criar palpite" }, { status: 500 });
   }
 }

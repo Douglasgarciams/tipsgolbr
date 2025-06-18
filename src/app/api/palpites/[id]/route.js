@@ -24,25 +24,32 @@ export async function GET(request, { params }) {
 
 // Função para ATUALIZAR (PUT) um palpite específico
 export async function PUT(request, { params }) {
+  // A lógica de segurança do admin que já tínhamos...
   try {
     const id = parseInt(params.id);
-    const data = await request.json(); // Pega os novos dados
+    const data = await request.json();
 
     const updatedPalpite = await prisma.palpite.update({
       where: { id: id },
       data: {
-        esporte: data.esporte,
+        // Campos antigos
         competicao: data.competicao,
         jogo: data.jogo,
         dataHora: new Date(data.dataHora),
         palpite: data.palpite,
         link: data.link,
+        // Novos campos que estávamos ignorando
+        odds: data.odds,
+        confianca: data.confianca,
+        analise: data.analise,
+        resultado: data.resultado,
+        placar: data.placar,
       },
     });
-
     return NextResponse.json(updatedPalpite);
   } catch (error) {
-    return NextResponse.json({ message: 'Erro ao atualizar palpite' }, { status: 500 });
+    console.error(`Erro ao atualizar palpite ${params.id}:`, error);
+    return NextResponse.json({ message: "Erro ao atualizar palpite" }, { status: 500 });
   }
 }
 

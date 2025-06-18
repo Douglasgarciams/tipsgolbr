@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:push": "$env:DATABASE_URL='mysql://2CSdAiD7xwjjqRn.root:fQegTrxJgrBeKLf1@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test?sslaccept=strict' ; npx prisma db push"
+    "db:push": "cross-env DATABASE_URL=\"mysql://2CSdAiD7xwjjqRn.root:fQegTrxJgrBeKLf1@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test?sslaccept=strict\" npx prisma db push"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "prisma": "^6.9.0",

@@ -1,4 +1,4 @@
-// prisma/schema.prisma --- VERSÃO COMPLETA E CORRIGIDA
+// prisma/schema.prisma --- VERSÃO ATUALIZADA COM NOVOS CAMPOS
 
 // Enums (Listas de opções)
 enum SubscriptionStatus {
@@ -11,37 +11,51 @@ enum Role {
   ADMIN
 }
 
+// --- NOVO ENUM PARA O RESULTADO DO PALPITE ---
+enum PalpiteResultado {
+  PENDING // Pendente
+  GREEN   // Acertou
+  RED     // Errou
+}
+
 // Configuração do Prisma Client
 generator client {
   provider = "prisma-client-js"
 }
 
-// Configuração da Conexão com o Banco de Dados (O bloco que estava faltando)
+// Configuração da Conexão com o Banco de Dados
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
-// Modelo da Tabela de Usuários
+// Modelo da Tabela de Usuários (sem alterações)
 model User {
-  id                      Int                 @id @default(autoincrement())
-  email                   String              @unique
-  password                String
-  role                    Role                @default(USER)
-  subscriptionStatus      SubscriptionStatus  @default(INACTIVE)
-  subscriptionExpiresAt   DateTime?
-  criadoEm                DateTime            @default(now())
+  id                    Int                @id @default(autoincrement())
+  email                 String             @unique
+  password              String
+  role                  Role               @default(USER)
+  subscriptionStatus    SubscriptionStatus @default(INACTIVE)
+  subscriptionExpiresAt DateTime?
+  criadoEm              DateTime           @default(now())
 }
 
-// Modelo da Tabela de Palpites
+// Modelo da Tabela de Palpites (ATUALIZADO)
 model Palpite {
   id         Int      @id @default(autoincrement())
-  esporte    String
+  esporte    String   @default("Futebol") // <-- Adicionado "Futebol" como padrão
   competicao String
   jogo       String
   dataHora   DateTime
   palpite    String
   link       String
   criadoEm   DateTime @default(now())
+
+  // --- NOVOS CAMPOS ADICIONADOS ---
+  odds       Float?            // Cotação (odd) da aposta. O '?' torna o campo opcional.
+  confianca  Int?              // Nível de confiança, ex: 1 a 5. O '?' torna opcional.
+  analise    String?  @db.Text // Campo para sua análise escrita. O '?' torna opcional.
+  resultado  PalpiteResultado  @default(PENDING) // Campo para o resultado (Green/Red)
+  placar     String?           // Placar final do jogo, ex: "2-1". O '?' torna opcional.
 }
