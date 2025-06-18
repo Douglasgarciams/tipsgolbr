@@ -1,13 +1,29 @@
-enum SubscriptionStatus { ACTIVE INACTIVE }
-enum Role { USER ADMIN }
-enum PalpiteResultado { PENDING GREEN RED }
+// prisma/schema.prisma --- VERSÃO COM FORMATAÇÃO CORRIGIDA
 
-generator client { provider = "prisma-client-js" }
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PalpiteResultado {
+  PENDING
+  GREEN
+  RED
 }
 
 model User {
@@ -21,17 +37,17 @@ model User {
 }
 
 model Palpite {
-  id         Int              @id @default(autoincrement())
-  esporte    String           @default("Futebol")
-  competicao String
-  jogo       String
-  dataHora   DateTime
-  palpite    String
-  link       String
-  criadoEm   DateTime         @default(now())
-  odds       Float?
-  confianca  Int?
-  analise    String?          @db.Text
-  resultado  PalpiteResultado @default(PENDING)
-  placar     String?
+  id                    Int              @id @default(autoincrement())
+  esporte               String           @default("Futebol")
+  competicao            String
+  jogo                  String
+  dataHora              DateTime
+  palpite               String
+  link                  String
+  criadoEm              DateTime         @default(now())
+  odds                  Float?
+  confianca             Int?
+  analise               String?          @db.Text
+  resultado             PalpiteResultado @default(PENDING)
+  placar                String?
 }
