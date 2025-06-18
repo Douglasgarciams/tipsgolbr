@@ -1,11 +1,10 @@
 // src/components/PalpitesClientView.js
 
-"use client"; // Marcamos como componente de cliente para ter interatividade
+"use client";
 
 import { useState, useMemo } from 'react';
 import PalpiteCard from '@/components/PalpiteCard';
 
-// A mesma função de agrupar que tínhamos na página
 const agruparPalpites = (palpites) => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -35,7 +34,6 @@ const agruparPalpites = (palpites) => {
     return grupos;
 };
 
-// Componente para renderizar uma seção
 const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
     if (palpitesDoGrupo.length === 0) return null;
     return (
@@ -48,16 +46,13 @@ const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
 
 
 export default function PalpitesClientView({ palpites }) {
-    // Estado para guardar o filtro ativo. Começa com 'Todos'.
     const [filtroAtivo, setFiltroAtivo] = useState('Todos');
 
-    // Pega a lista de todas as competições únicas para criar os botões
     const competicoes = useMemo(() => {
         const lista = palpites.map(p => p.competicao);
         return ['Todos', ...new Set(lista)];
     }, [palpites]);
 
-    // Filtra os palpites baseado no filtro ativo
     const palpitesFiltrados = useMemo(() => {
         if (filtroAtivo === 'Todos') {
             return palpites;
@@ -69,7 +64,6 @@ export default function PalpitesClientView({ palpites }) {
 
     return (
         <div>
-            {/* Seção de Filtros */}
             <div className="mb-10">
                 <h2 className="text-xl font-bold text-white mb-4">Filtrar por Competição:</h2>
                 <div className="flex flex-wrap gap-2">
@@ -85,7 +79,6 @@ export default function PalpitesClientView({ palpites }) {
                 </div>
             </div>
 
-            {/* Seção de Palpites Agrupados */}
             {palpitesFiltrados.length === 0 ? (
                 <p className="text-center text-gray-400 text-xl">Nenhum palpite encontrado para o filtro selecionado.</p>
             ) : (
