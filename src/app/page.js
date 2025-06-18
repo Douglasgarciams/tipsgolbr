@@ -1,61 +1,95 @@
-// src/app/page.js --- VERSÃO NOVA E DINÂMICA
+// src/app/page.js --- VERSÃO COM AGRUPAMENTO POR DATA
 
-import PalpiteCard from "@/components/PalpiteCard";
 import Header from '@/components/Header';
+import PalpiteCard from '@/components/PalpiteCard';
+import prisma from '@/lib/prisma';
 
-// Esta função busca os dados da nossa própria API
-async function getPalpites() {
-  // A URL é a do nosso endpoint que acabamos de fazer funcionar
-  // O { cache: 'no-store' } garante que os dados sejam sempre os mais recentes
-  const res = await fetch('http://localhost:3000/api/palpites', { cache: 'no-store' });
+// Função que pega a lista de palpites e a separa em grupos
+const agruparPalpites = (palpites) => {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
 
-  if (!res.ok) {
-    // Se a API der um erro, ele será mostrado no terminal
-    throw new Error('Falha ao buscar dados da API');
-  }
+  const amanha = new Date(hoje);
+  amanha.setDate(hoje.getDate() + 1);
 
-  return res.json();
-}
+  const depoisDeAmanha = new Date(hoje);
+  depoisDeAmanha.setDate(hoje.getDate() + 2);
 
-// A página agora é uma função "async", capaz de esperar por dados
-export default async function HomePage() {
-  // Aqui, a página chama a função, espera a resposta da API e guarda em uma variável
-  const palpitesDoDia = await getPalpites();
+  const grupos = {
+    hoje: [],
+    amanha: [],
+    proximosDias: [],
+    resultados: [],
+  };
+
+  palpites.forEach(p => {
+    const dataPalpite = new Date(p.dataHora);
+    // Usamos >= hoje para garantir que jogos que já aconteceram hoje apareçam em resultados
+    if (dataPalpite < hoje) {
+      grupos.resultados.push(p);
+    } else if (dataPalpite >= hoje && dataPalpite < amanha) {
+      grupos.hoje.push(p);
+    } else if (dataPalpite >= amanha && dataPalpite < depoisDeAmanha) {
+      grupos.amanha.push(p);
+    } else {
+      grupos.proximosDias.push(p);
+    }
+  });
+
+  // Ordena os resultados dos mais recentes para os mais antigos
+  grupos.resultados.sort((a, b) => new Date(b.dataHora) - new Date(a.dataHora));
+
+  return grupos;
+};
+
+
+// Componente auxiliar para renderizar uma seção de palpites, para não repetir código
+const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
+  if (palpitesDoGrupo.length === 0) return null; // Não mostra a seção se estiver vazia
 
   return (
-    // VERSÃO CORRIGIDA
-<main className="min-h-screen bg-gray-900 text-white container mx-auto p-4 md:p-8">
-      
+    <section className="mb-12">
+      <h2 className="text-3xl font-bold text-white border-l-4 border-green-500 pl-4 mb-6">
+        {titulo}
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {palpitesDoGrupo.map(palpite => (
+          <PalpiteCard key={palpite.id} palpite={palpite} />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export default async function HomePage() {
+  // Busca os palpites do banco de dados
+  const palpites = await prisma.palpite.findMany({
+    orderBy: {
+      dataHora: 'asc', // Ordena por data do mais próximo ao mais distante
+    },
+  });
+
+  const palpitesAgrupados = agruparPalpites(palpites);
+
+  return (
+    <main className="min-h-screen bg-gray-900 text-white container mx-auto p-4 md:p-8">
       <div className="text-center my-8">
         <Header />
         <p className="text-gray-400 mt-2 text-lg">
-    Sua seleção diária de palpites de futebol.
+          Sua seleção diária de palpites de futebol.
         </p>
       </div>
 
-      <section>
-        <h2 className="text-3xl font-bold text-white mb-6 border-l-4 border-green-500 pl-4">
-          Palpites do Dia
-        </h2>
-        
-        {/* Adicionamos uma verificação aqui: */}
-        {palpitesDoDia.length > 0 ? (
-          // Se houver palpites, mostra os cards
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {palpitesDoDia.map((palpite) => (
-              <PalpiteCard key={palpite.id} palpiteInfo={palpite} />
-            ))}
-          </div>
-        ) : (
-          // Se não houver palpites, mostra uma mensagem
-          <p className="text-gray-400 text-center">Nenhum palpite disponível no momento.</p>
-        )}
-      </section>
-
-      <footer className="text-center text-gray-500 mt-12 py-4">
-        <p>&copy; {new Date().getFullYear()} TipsGolBR. Jogue com responsabilidade.</p>
-      </footer>
-
+      {palpites.length === 0 ? (
+        <p className="text-center text-gray-400 text-xl">Nenhum palpite disponível no momento.</p>
+      ) : (
+        <div>
+          <PalpiteSection titulo="Jogos de Hoje" palpitesDoGrupo={palpitesAgrupados.hoje} />
+          <PalpiteSection titulo="Jogos de Amanhã" palpitesDoGrupo={palpitesAgrupados.amanha} />
+          <PalpiteSection titulo="Próximos Dias" palpitesDoGrupo={palpitesAgrupados.proximosDias} />
+          <PalpiteSection titulo="Resultados Recentes" palpitesDoGrupo={palpitesAgrupados.resultados} />
+        </div>
+      )}
     </main>
   );
 }

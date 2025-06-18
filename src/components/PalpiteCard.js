@@ -1,32 +1,37 @@
 // src/components/PalpiteCard.js
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
-export default function PalpiteCard({ palpiteInfo }) {
-  // Formata a data para "16/06 às 20:00h"
-  const dataFormatada = format(new Date(palpiteInfo.dataHora), "dd/MM 'às' HH:mm'h'", {
-    locale: ptBR,
+// Uma função para formatar a data e hora de forma amigável
+const formatarDataHora = (data) => {
+  return new Date(data).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   });
+};
+
+export default function PalpiteCard({ palpite }) {
+  // Adicionamos um ícone de status baseado no resultado do palpite
+  const statusIcon = palpite.resultado === 'GREEN' ? '✅' : palpite.resultado === 'RED' ? '❌' : '⏳';
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-lg text-white flex flex-col transition-transform hover:scale-105">
+    <a 
+      href={palpite.link} 
+      target="_blank" 
+      rel="noopener noreferrer" 
+      className="block bg-gray-800 p-4 rounded-lg shadow-md hover:bg-gray-700 transition-all duration-300 transform hover:scale-105"
+    >
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-semibold text-cyan-400">{palpiteInfo.competicao}</span>
-        <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">{palpiteInfo.esporte}</span>
+        <span className="text-sm font-semibold text-cyan-400">{palpite.competicao}</span>
+        <span className="text-xs text-gray-400">{formatarDataHora(palpite.dataHora)}</span>
       </div>
-      <h3 className="text-xl font-bold mb-2">{palpiteInfo.jogo}</h3>
-      <p className="text-gray-300 mb-1">📅 {dataFormatada}</p>
-      <p className="text-gray-300 mb-4 flex-grow">
-        <span className="font-semibold text-white">Nosso Palpite:</span> {palpiteInfo.palpite}
-      </p>
-      <a
-        href={palpiteInfo.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="w-full block text-center bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors"
-      >
-        Ver Palpite
-      </a>
-    </div>
+      <div className="text-center my-3">
+        <p className="font-bold text-lg text-white">{palpite.jogo}</p>
+      </div>
+      <div className="text-center bg-gray-900 rounded-lg p-3">
+        <p className="text-lg font-bold text-green-400">{palpite.palpite} <span className="text-white">{statusIcon}</span></p>
+      </div>
+    </a>
   );
 }
