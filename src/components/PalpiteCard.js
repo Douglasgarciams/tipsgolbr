@@ -61,7 +61,7 @@ export default function PalpiteCard({ palpite }) {
 
           {analiseAberta && (
             <div className="mt-2 text-sm text-gray-300 bg-gray-700 p-3 rounded-md">
-              <p className="italic">"{`"${palpite.analise}"`}"</p>
+              <p className="italic">{`"${palpite.analise}"`}</p>
             </div>
           )}
         </div>
