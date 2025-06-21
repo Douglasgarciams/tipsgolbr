@@ -11,9 +11,7 @@ export default function AdminPage() {
     dataHora: '',
     palpite: '',
     link: '',
-    odds: '',
-    confianca: '',
-    analise: '',
+    oddpesquisada: '', // ALTERADO AQUI: de 'odds' para 'oddpesquisada'
     resultado: 'PENDING',
     placar: '',
   };
@@ -56,7 +54,8 @@ export default function AdminPage() {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [id]: value }));
+    // O id do input será 'oddpesquisada', e ele atualizará corretamente o estado
+    setFormData((prevData) => ({ ...prevData, [id]: value })); 
   };
 
   const handleLogout = async () => {
@@ -71,8 +70,8 @@ export default function AdminPage() {
     const body = {
       ...formData,
       esporte: 'Futebol',
-      odds: formData.odds ? parseFloat(formData.odds) : null,
-      confianca: formData.confianca ? parseInt(formData.confianca) : null,
+      // ALTERADO AQUI: de 'odds' para 'oddpesquisada' no parseFloat
+      odds: formData.oddpesquisada ? parseFloat(formData.oddpesquisada) : null, 
       placar: formData.placar || null,
     };
     const url = editingId ? `/api/palpites/${editingId}` : '/api/palpites';
@@ -110,9 +109,8 @@ export default function AdminPage() {
     setFormData({ 
       ...initialState,
       ...palpite,
-      odds: palpite.odds || '',
-      confianca: palpite.confianca || '',
-      analise: palpite.analise || '',
+      // ALTERADO AQUI: de 'odds' para 'oddpesquisada'
+      oddpesquisada: palpite.odds || '', // Note: Aqui estamos mapeando 'odds' do backend para 'oddpesquisada' do frontend
       link: palpite.link || '',
       placar: palpite.placar || '',
       dataHora: dataFormatada,
@@ -164,10 +162,9 @@ export default function AdminPage() {
             <div><label htmlFor="palpite" className="block text-sm font-medium text-gray-300">Palpite</label><input type="text" id="palpite" value={formData.palpite} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             <div><label htmlFor="link" className="block text-sm font-medium text-gray-300">Link da Casa de Aposta</label><input type="url" id="link" value={formData.link} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label htmlFor="odds" className="block text-sm font-medium text-gray-300">Odds (ex: 1.85)</label><input type="number" step="0.01" id="odds" value={formData.odds} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
-                <div><label htmlFor="confianca" className="block text-sm font-medium text-gray-300">Confiança (1-5)</label><input type="number" min="1" max="5" id="confianca" value={formData.confianca} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
+                {/* ALTERADO AQUI: de 'odds' para 'oddpesquisada' */}
+                <div><label htmlFor="oddpesquisada" className="block text-sm font-medium text-gray-300">Odd Pesquisada (ex: 1.85)</label><input type="number" step="0.01" id="oddpesquisada" value={formData.oddpesquisada} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             </div>
-            <div><label htmlFor="analise" className="block text-sm font-medium text-gray-300">Breve Análise</label><textarea id="analise" value={formData.analise} onChange={handleChange} rows="3" className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"></textarea></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label htmlFor="resultado" className="block text-sm font-medium text-gray-300">Resultado</label><select id="resultado" value={formData.resultado} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"><option value="PENDING">Pendente</option><option value="GREEN">Green</option><option value="RED">Red</option></select></div>
                 <div><label htmlFor="placar" className="block text-sm font-medium text-gray-300">Placar Final (ex: 2-1)</label><input type="text" id="placar" value={formData.placar} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
