@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from 'react'; // CORRIGIDO AQUI: de '=' para 'from'
 import FormattedDate from '@/components/FormattedDate'; // Importamos nosso componente de data
 
 const ResultadoIcon = ({ resultado }) => {
   if (resultado === 'GREEN') return <span title="Green" className="text-xl">✅</span>;
   if (resultado === 'RED') return <span title="Red" className="text-xl">❌</span>;
   return <span title="Pendente">⏳</span>;
+};
+
+// Função auxiliar para formatar o nome do método para exibição (ex: LAY_0X1 -> Lay 0x1)
+const formatMethodForDisplay = (name) => {
+    if (!name) return '';
+    return name.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 };
 
 export default function PalpiteCard({ palpite }) {
@@ -52,7 +58,6 @@ export default function PalpiteCard({ palpite }) {
     if (resultadoAposta === 'GREEN') {
       resultadoPNL = parseFloat(ganhoOuPerda); // Se for GREEN, o valor é o ganho
     } else if (resultadoAposta === 'RED') {
-      // Se for RED, o valor é a perda, então deve ser negativo
       resultadoPNL = -parseFloat(ganhoOuPerda); 
     }
 
@@ -60,12 +65,9 @@ export default function PalpiteCard({ palpite }) {
       palpiteId: palpite.id,
       valorApostado: parseFloat(valorApostado),
       resultadoPNL: resultadoPNL,
-      // Você pode adicionar um campo 'resultadoReal' para armazenar GREEN/RED se quiser
-      // resultadoReal: resultadoAposta, 
     };
 
     try {
-      // Esta API precisa ser criada! (Ex: src/app/api/apostar-palpite/route.js)
       const res = await fetch('/api/apostar-palpite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,7 +80,6 @@ export default function PalpiteCard({ palpite }) {
       }
 
       setMessageAposta('Aposta registrada com sucesso!');
-      // TODO: Pode ser necessário atualizar o estado do PalpitesClientview para refletir a aposta
       handleCloseModal(); // Fecha o modal após o sucesso
     } catch (error) {
       setMessageAposta(`Erro: ${error.message}`);
@@ -104,10 +105,11 @@ export default function PalpiteCard({ palpite }) {
         </div>
 
         <div className="text-center bg-gray-900 rounded-lg p-3 my-2">
-          <p className="text-xl font-bold text-green-400">{palpite.palpite}</p>
-          {palpite.odds && 
+          {/* NOVO: Usando formatMethodForDisplay para exibir o palpite (que agora é o método) */}
+          <p className="text-xl font-bold text-green-400">{formatMethodForDisplay(palpite.palpite)}</p>
+          {palpite.oddpesquisada && // Era palpite.odds, agora é oddpesquisada
             <p className="text-sm font-semibold text-white mt-1">
-              Odd: {palpite.odds.toFixed(2)}
+              Odd: {palpite.oddpesquisada.toFixed(2)}
             </p>
           }
         </div>
@@ -129,7 +131,6 @@ export default function PalpiteCard({ palpite }) {
         Apostar Agora
       </a>
 
-      {/* NOVO: Botão para abrir o modal de registro de resultado */}
       <button
         onClick={handleOpenModal}
         className="block bg-blue-600 hover:bg-blue-700 text-white font-bold text-center py-3 transition-colors mt-2"
@@ -137,13 +138,12 @@ export default function PalpiteCard({ palpite }) {
         Registrar Resultado
       </button>
 
-      {/* NOVO: Modal de Registro de Aposta */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 className="text-xl font-bold mb-4 text-white">Registrar Resultado da Aposta</h3>
             <p className="text-sm text-gray-400 mb-4">
-                Palpite: **{palpite.jogo}** - {palpite.palpite}
+                Palpite: **{formatMethodForDisplay(palpite.palpite)}** - {palpite.jogo}
             </p>
             <form onSubmit={handleSubmitAposta} className="space-y-4">
               <div>

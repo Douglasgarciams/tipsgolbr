@@ -1,3 +1,5 @@
+// prisma/schema.prisma --- VERSÃO COM CAMPO 'isDeleted' EM ApostaFeita
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -24,6 +26,48 @@ enum PalpiteResultado {
   RED
 }
 
+enum MetodoDeAposta {
+  LAY_0X1
+  LAY_0X2
+  LAY_0X3
+  LAY_GOLEADA
+  LAY_1X0
+  LAY_2X0
+  LAY_3X0
+  BACK_GOLEADA
+  BACK_CASA
+  BACK_VISITANTE
+  LAY_CASA
+  LAY_VISITANTE
+  OVER_0_5HT
+  OVER_1_5HT
+  OVER_2_5HT
+  OVER_3_5HT
+  OVER_0_5FT
+  OVER_1_5FT
+  OVER_2_5FT
+  OVER_3_5FT
+  OVER_4_5FT
+  OVER_5_5FT
+  OVER_6_5FT
+  OVER_7_5FT
+  UNDER_0_5FT
+  UNDER_1_5FT
+  UNDER_2_5FT
+  UNDER_3_5FT
+  UNDER_4_5FT
+  UNDER_5_5FT
+  UNDER_6_5FT
+  UNDER_7_5FT
+  UNDER_0_5HT
+  UNDER_1_5HT
+  UNDER_2_5HT
+  UNDER_3_5HT
+  UNDER_4_5HT
+  BACK_DUPLA_CHANCE
+  LAY_DUPLA_CHANCE
+}
+
 model User {
   id                    Int                @id @default(autoincrement())
   email                 String             @unique
@@ -32,7 +76,7 @@ model User {
   subscriptionStatus    SubscriptionStatus @default(INACTIVE)
   subscriptionExpiresAt DateTime?
   criadoEm              DateTime           @default(now())
-  apostasFeitas         ApostaFeita[] // Adicionei isso de volta do seu schema anterior, pois é crucial
+  apostasFeitas         ApostaFeita[]
 }
 
 model Palpite {
@@ -44,23 +88,29 @@ model Palpite {
   palpite       String
   link          String
   criadoEm      DateTime         @default(now())
-  oddpesquisada Float? // ALTERADO: Renomeado de 'odds' para 'oddpesquisada'
-  // REMOVIDO: confianca Int?
-  // REMOVIDO: analise   String?  @db.Text
+  oddpesquisada Float?
+  metodoAposta  MetodoDeAposta?
   resultado     PalpiteResultado @default(PENDING)
   placar        String?
-  seguidoPor    ApostaFeita[] // Adicionei isso de volta do seu schema anterior, pois é crucial
+  seguidoPor    ApostaFeita[]
 }
 
-// RESTAURADO: Este modelo ApostaFeita é fundamental para os lucros/prejuízos
 model ApostaFeita {
-  id            Int       @id @default(autoincrement())
-  valorApostado Float
-  resultadoPNL  Float?    // Adicionado para registrar o lucro/prejuízo
-  data          DateTime  @default(now())
-  usuarioId     Int
-  palpiteId     Int
-  usuario       User      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  palpite       Palpite   @relation(fields: [palpiteId], references: [id], onDelete: Cascade)
-  @@unique([usuarioId, palpiteId]) // Garante que um usuário não siga o mesmo palpite duas vezes
+  id                    Int       @id @default(autoincrement())
+  valorApostado         Float
+  resultadoPNL          Float?
+  data                  DateTime  @default(now())
+  isDeleted             Boolean   @default(false) // NOVO CAMPO: Para exclusão lógica
+  usuarioId             Int?
+  palpiteId             Int? 
+
+  palpiteJogo           String?
+  palpiteMetodo         String?
+  palpiteCompeticao     String?
+  palpiteOdds           Float?
+  palpiteLink           String?
+
+  usuario               User?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  palpite               Palpite?  @relation(fields: [palpiteId], references: [id], onDelete: SetNull)
+  @@unique([usuarioId, palpiteId])
 }

@@ -1,17 +1,40 @@
+// src/app/admin/page.js --- VERSÃO FINAL COMPLETA E CORRETA
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import FormattedDate from '@/components/FormattedDate';
 
+// Lista de métodos de aposta (DEVE SER IGUAL AO ENUM NO SCHEMA.PRISMA, EM UPPER_SNAKE_CASE)
+const METODOS_DE_APOSTA = [
+  'LAY_0X1', 'LAY_0X2', 'LAY_0X3', 'LAY_GOLEADA', 'LAY_1X0', 'LAY_2X0', 'LAY_3X0',
+  'BACK_GOLEADA', 'BACK_CASA', 'BACK_VISITANTE', 'LAY_CASA', 'LAY_VISITANTE',
+  'OVER_0_5HT', 'OVER_1_5HT', 'OVER_2_5HT', 'OVER_3_5HT', 'OVER_0_5FT',
+  'OVER_1_5FT', 'OVER_2_5FT', 'OVER_3_5FT', 'OVER_4_5FT', 'OVER_5_5FT',
+  'OVER_6_5FT', 'OVER_7_5FT',
+  'UNDER_0_5FT', 'UNDER_1_5FT', 'UNDER_2_5FT', 'UNDER_3_5FT', 'UNDER_4_5FT',
+  'UNDER_5_5FT', 'UNDER_6_5FT', 'UNDER_7_5FT', 'UNDER_0_5HT', 'UNDER_1_5HT',
+  'UNDER_2_5HT', 'UNDER_3_5HT', 'UNDER_4_5HT',
+  'BACK_DUPLA_CHANCE', 'LAY_DUPLA_CHANCE'
+];
+
+// Função auxiliar para formatar o nome do enum para exibição (ex: LAY_0X1 -> Lay 0x1)
+const formatMetodoName = (name) => {
+    if (!name) return '';
+    return name.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+};
+
+
 export default function AdminPage() {
   const initialState = {
     competicao: '',
     jogo: '',
     dataHora: '',
-    palpite: '',
+    palpite: '', 
     link: '',
-    oddpesquisada: '', // ALTERADO AQUI: de 'odds' para 'oddpesquisada'
+    oddpesquisada: '', 
+    metodoAposta: '', 
     resultado: 'PENDING',
     placar: '',
   };
@@ -22,7 +45,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState(null);
   
   const [palpites, setPalpites] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); 
   const router = useRouter();
 
   const fetchPalpites = async () => {
@@ -36,7 +59,7 @@ export default function AdminPage() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async () => { 
     try {
       const res = await fetch('/api/users');
       if (res.ok) {
@@ -49,12 +72,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchPalpites();
-    fetchUsers();
+    fetchUsers(); 
   }, []);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    // O id do input será 'oddpesquisada', e ele atualizará corretamente o estado
     setFormData((prevData) => ({ ...prevData, [id]: value })); 
   };
 
@@ -70,8 +92,9 @@ export default function AdminPage() {
     const body = {
       ...formData,
       esporte: 'Futebol',
-      // ALTERADO AQUI: de 'odds' para 'oddpesquisada' no parseFloat
-      odds: formData.oddpesquisada ? parseFloat(formData.oddpesquisada) : null, 
+      odds: formData.oddpesquisada ? parseFloat(formData.oddpesquisada) : null,
+      palpite: formData.metodoAposta, 
+      metodoAposta: formData.metodoAposta || null, 
       placar: formData.placar || null,
     };
     const url = editingId ? `/api/palpites/${editingId}` : '/api/palpites';
@@ -97,7 +120,8 @@ export default function AdminPage() {
         if (!res.ok) throw new Error('Falha ao deletar o palpite');
         setMessage('Palpite deletado com sucesso!');
         await fetchPalpites();
-      } catch (error) {
+      }
+      catch (error) {
         setMessage(`Erro: ${error.message}`);
       }
     }
@@ -109,8 +133,9 @@ export default function AdminPage() {
     setFormData({ 
       ...initialState,
       ...palpite,
-      // ALTERADO AQUI: de 'odds' para 'oddpesquisada'
-      oddpesquisada: palpite.odds || '', // Note: Aqui estamos mapeando 'odds' do backend para 'oddpesquisada' do frontend
+      oddpesquisada: palpite.oddpesquisada || '',
+      metodoAposta: palpite.metodoAposta || '', 
+      palpite: palpite.metodoAposta || '', 
       link: palpite.link || '',
       placar: palpite.placar || '',
       dataHora: dataFormatada,
@@ -118,20 +143,20 @@ export default function AdminPage() {
     window.scrollTo(0, 0);
   };
 
-  const handleActivateSubscription = async (userId) => {
+  const handleActivateSubscription = async (userId) => { 
     if (window.confirm('Ativar a assinatura por 30 dias para este usuário?')) {
-        try {
-            const res = await fetch(`/api/users/${userId}/activate`, { method: 'POST' });
-            if (!res.ok) throw new Error('Falha ao ativar a assinatura');
-            setMessage('Assinatura ativada com sucesso!');
-            await fetchUsers();
-        } catch (error) {
-            setMessage(`Erro: ${error.message}`);
-        }
-    }
+                try {
+                    const res = await fetch(`/api/users/${userId}/activate`, { method: 'POST' });
+                    if (!res.ok) throw new Error('Falha ao ativar a assinatura');
+                    setMessage('Assinatura ativada com sucesso!');
+                    await fetchUsers();
+                } catch (error) {
+                    setMessage(`Erro: ${error.message}`);
+                }
+            }
   };
   
-  const handleDeactivateSubscription = async (userId) => {
+  const handleDeactivateSubscription = async (userId) => { 
     if (window.confirm('Tem certeza que deseja DESATIVAR a assinatura deste usuário?')) {
       try {
         const res = await fetch(`/api/users/${userId}/deactivate`, { method: 'POST' });
@@ -143,6 +168,49 @@ export default function AdminPage() {
       }
     }
   };
+
+  // NOVO: Função para deletar TODOS os palpites
+  const handleDeleteAllPalpites = async () => {
+    if (window.confirm('ATENÇÃO: Tem certeza que deseja EXCLUIR TODOS os PALPITES criados no admin? Esta ação é irreversível e removerá todas as dicas!')) {
+      setIsLoading(true);
+      setMessage('');
+      try {
+        const res = await fetch('/api/palpites/delete-all', { method: 'DELETE' }); // API para deletar todos os palpites
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Falha ao deletar todos os palpites.');
+        }
+        setMessage('Todos os palpites foram excluídos com sucesso!');
+        await fetchPalpites(); // Recarrega a lista de palpites após a exclusão
+      } catch (error) {
+        setMessage(`Erro: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // REMOVIDO: Função handleDeleteAllApostas
+  /*
+  const handleDeleteAllApostas = async () => {
+    if (window.confirm('ATENÇÃO: Tem certeza que deseja EXCLUIR TODAS as apostas registradas (dos usuários)? Esta ação é irreversível!')) {
+      setIsLoading(true);
+      setMessage('');
+      try {
+        const res = await fetch('/api/apostas/delete-all', { method: 'DELETE' });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Falha ao deletar todas as apostas.');
+        }
+        setMessage('Todas as apostas dos usuários foram excluídas com sucesso!');
+      } catch (error) {
+        setMessage(`Erro: ${error.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  */
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
@@ -159,11 +227,23 @@ export default function AdminPage() {
             <div><label htmlFor="competicao" className="block text-sm font-medium text-gray-300">Competição</label><input type="text" id="competicao" value={formData.competicao} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             <div><label htmlFor="jogo" className="block text-sm font-medium text-gray-300">Jogo (Ex: Time A vs. Time B)</label><input type="text" id="jogo" value={formData.jogo} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             <div><label htmlFor="dataHora" className="block text-sm font-medium text-gray-300">Data e Hora do Jogo</label><input type="datetime-local" id="dataHora" value={formData.dataHora} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
-            <div><label htmlFor="palpite" className="block text-sm font-medium text-gray-300">Palpite</label><input type="text" id="palpite" value={formData.palpite} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
+            {/* REMOVIDO: Campo de texto 'Palpite' - AGORA O METODO DE APOSTA É O PALPITE */}
+            {/* <div><label htmlFor="palpite" className="block text-sm font-medium text-gray-300">Palpite</label><input type="text" id="palpite" value={formData.palpite} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div> */}
             <div><label htmlFor="link" className="block text-sm font-medium text-gray-300">Link da Casa de Aposta</label><input type="url" id="link" value={formData.link} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* ALTERADO AQUI: de 'odds' para 'oddpesquisada' */}
                 <div><label htmlFor="oddpesquisada" className="block text-sm font-medium text-gray-300">Odd Pesquisada (ex: 1.85)</label><input type="number" step="0.01" id="oddpesquisada" value={formData.oddpesquisada} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"/></div>
+                {/* CAMPO DE SELEÇÃO DE MÉTODO (DROPDOWN) */}
+                <div>
+                  <label htmlFor="metodoAposta" className="block text-sm font-medium text-gray-300">Método de Aposta</label>
+                  <select id="metodoAposta" value={formData.metodoAposta} onChange={handleChange} required className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md">
+                    <option value="">Selecione um Método</option>
+                    {METODOS_DE_APOSTA.map(metodo => (
+                      <option key={metodo} value={metodo}>
+                        {formatMetodoName(metodo)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label htmlFor="resultado" className="block text-sm font-medium text-gray-300">Resultado</label><select id="resultado" value={formData.resultado} onChange={handleChange} className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md"><option value="PENDING">Pendente</option><option value="GREEN">Green</option><option value="RED">Red</option></select></div>
@@ -172,6 +252,26 @@ export default function AdminPage() {
             <div className="flex gap-4 pt-4"><button type="submit" disabled={isLoading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md disabled:bg-gray-500">{isLoading ? 'Salvando...' : (editingId ? 'Atualizar Palpite' : 'Salvar Palpite')}</button>{editingId && (<button type="button" onClick={() => { setEditingId(null); setFormData(initialState); }} className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-md">Cancelar Edição</button>)}</div>
           </form>
           {message && <p className={`mt-4 text-center text-sm ${message.startsWith('Erro') ? 'text-red-400' : 'text-green-400'}`}>{message}</p>}
+
+          {/* BOTOES DE DELECAO GERAL */}
+          <div className="mt-8 pt-4 border-t border-gray-700 flex flex-col gap-4">
+            <button 
+              onClick={handleDeleteAllPalpites} // NOVO: Botão para deletar todos os palpites
+              disabled={isLoading}
+              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md disabled:bg-gray-500"
+            >
+              {isLoading ? 'Excluindo Palpites...' : 'Apagar TODOS os PALPITES (Admin)'}
+            </button>
+            {/* REMOVIDO: Botão de Apagar Todas as Apostas Registradas (Usuários) */}
+            {/* <button 
+              onClick={handleDeleteAllApostas} 
+              disabled={isLoading}
+              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md disabled:bg-gray-500"
+            >
+              {isLoading ? 'Excluindo Apostas...' : 'Apagar TODAS as Apostas Registradas (Usuários)'}
+            </button> */}
+          </div>
+
         </div>
 
         {/* SEÇÃO DA LISTA DE PALPITES */}
@@ -185,7 +285,7 @@ export default function AdminPage() {
           <h2 className="text-2xl font-bold mb-4">Gerenciamento de Usuários</h2>
           <div className="space-y-4">{users.length > 0 ? users.map(user => (<div key={user.id} className="grid grid-cols-1 md:grid-cols-3 items-center bg-gray-700 p-4 rounded-md gap-4"><div><p className="font-bold truncate">{user.email}</p><p className="text-sm text-gray-400">Cargo: {user.role}</p></div><div><p className={`font-semibold ${user.subscriptionStatus === 'ACTIVE' ? 'text-green-400' : 'text-red-400'}`}>Status: {user.subscriptionStatus}</p>{user.subscriptionExpiresAt && (<p className="text-sm text-gray-400">Expira em: <FormattedDate isoDate={user.subscriptionExpiresAt} /></p>)}</div><div className="text-right">{user.subscriptionStatus === 'ACTIVE' ? (<button onClick={() => handleDeactivateSubscription(user.id)} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-md">Desativar</button>) : (<button onClick={() => handleActivateSubscription(user.id)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Ativar por 30 dias</button>)}</div></div>)) : <p>Nenhum usuário cadastrado.</p>}</div>
         </div>
-      </div>
-    </div>
-  );
+      </div>
+    </div>
+  );
 }

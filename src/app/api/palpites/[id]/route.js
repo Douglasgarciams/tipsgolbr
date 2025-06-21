@@ -1,12 +1,10 @@
-// src/app/api/palpites/[id]/route.js --- CÓDIGO CORRIGIDO
+// src/app/api/palpites/[id]/route.js --- CÓDIGO FINAL E CORRIGIDO (SEM DUPLICIDADE DELETE)
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
-// Função para LER (GET) um ÚNICO palpite pelo seu ID
 export async function GET(request, { params }) {
   try {
-    // CORRIGIDO: Certificando-se de que params é lido corretamente
     const id = parseInt(params.id); 
     const palpite = await prisma.palpite.findUnique({
       where: { id: id },
@@ -18,15 +16,13 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(palpite);
   } catch (error) {
-    console.error(`Erro ao buscar palpite ${params.id}:`, error); // Adicionado log para depuração
+    console.error(`Erro ao buscar palpite ${params.id}:`, error); 
     return NextResponse.json({ message: 'Erro ao buscar palpite' }, { status: 500 });
   }
 }
 
-// Função para ATUALIZAR (PUT) um palpite específico
 export async function PUT(request, { params }) {
   try {
-    // CORRIGIDO: Certificando-se de que params é lido corretamente
     const id = parseInt(params.id);
     const data = await request.json();
 
@@ -36,27 +32,24 @@ export async function PUT(request, { params }) {
         competicao: data.competicao,
         jogo: data.jogo,
         dataHora: new Date(data.dataHora),
-        palpite: data.palpite,
+        palpite: data.palpite, // Recebe a string do método do frontend
         link: data.link,
-        // CORRIGIDO: Usando 'oddpesquisada' e removendo 'confianca'/'analise'
         oddpesquisada: data.oddpesquisada ? parseFloat(data.oddpesquisada) : null,
-        // confianca e analise removidos daqui
+        metodoAposta: data.metodoAposta || null, // NOVO: Atualizando o campo metodoAposta!
         resultado: data.resultado,
         placar: data.placar,
       },
     });
     return NextResponse.json(updatedPalpite);
   } catch (error) {
-    // CORRIGIDO: Acessando params.id dentro do console.error de forma segura
     console.error(`Erro ao atualizar palpite (ID: ${params.id}):`, error); 
     return NextResponse.json({ message: "Erro ao atualizar palpite" }, { status: 500 });
   }
 }
 
-// Função para DELETAR (DELETE) um palpite específico
+// Apenas UMA função DELETE agora!
 export async function DELETE(request, { params }) {
   try {
-    // CORRIGIDO: Certificando-se de que params é lido corretamente
     const id = parseInt(params.id);
     await prisma.palpite.delete({
       where: { id: id },
@@ -64,7 +57,7 @@ export async function DELETE(request, { params }) {
 
     return new NextResponse(null, { status: 204 }); 
   } catch (error) {
-    console.error(`Erro ao deletar palpite (ID: ${params.id}):`, error); // Adicionado log para depuração
+    console.error(`Erro ao deletar palpite (ID: ${params.id}):`, error); 
     return NextResponse.json({ message: 'Erro ao deletar palpite' }, { status: 500 });
   }
 }

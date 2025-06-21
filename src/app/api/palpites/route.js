@@ -1,4 +1,4 @@
-// src/app/api/palpites/route.js --- CÓDIGO FINAL E CORRIGIDO (AGORA CORRIGIDO PARA O SCHEMA)
+// src/app/api/palpites/route.js --- CÓDIGO CORRIGIDO (AGORA SALVANDO metodoAposta)
 
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
@@ -29,12 +29,10 @@ export async function POST(request) {
         competicao: data.competicao,
         jogo: data.jogo,
         dataHora: new Date(data.dataHora),
-        palpite: data.palpite,
+        palpite: data.palpite, // Recebe a string do método do frontend
         link: data.link,
-        // CORRIGIDO: Usando 'oddpesquisada' que vem do frontend
-        // E garantindo que seja Float ou null
         oddpesquisada: data.oddpesquisada ? parseFloat(data.oddpesquisada) : null,
-        // REMOVIDOS: 'confianca' e 'analise' não existem mais no schema
+        metodoAposta: data.metodoAposta || null, // NOVO: Salvando o campo metodoAposta!
         resultado: data.resultado,
         placar: data.placar,
       },
