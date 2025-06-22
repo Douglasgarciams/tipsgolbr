@@ -1,54 +1,53 @@
-// src/app/login/page.js
+// src/app/login/page.js - COM IMAGEM DE FUNDO
 
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Importa o hook de navegação
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter(); // Inicializa o router
+  const router = useRouter();
 
-  // Dentro do arquivo src/app/login/page.js
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsLoading(true);
-  setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+      const data = await res.json();
 
-    const data = await res.json(); // Pega a resposta completa da API
+      if (!res.ok) {
+        throw new Error(data.message || 'Falha no login');
+      }
 
-    if (!res.ok) {
-      throw new Error(data.message || 'Falha no login');
+      if (data.user.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
+
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
-
-    // AQUI ESTÁ A NOVA LÓGICA DE REDIRECIONAMENTO:
-    if (data.user.role === 'ADMIN') {
-      router.push('/admin'); // Se for Admin, vai para o painel
-    } else {
-      router.push('/'); // Se for User, vai para a home de palpites
-    }
-
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
+    // Alterado aqui: Removidas bg-gray-900 e text-white, adicionada login-background
+    <div className="min-h-screen login-background flex items-center justify-center">
+      {/* O container do formulário com fundo cinza e transparência */}
+      <div className="bg-gray-800 bg-opacity-90 p-8 rounded-lg shadow-lg w-full max-w-sm text-white"> {/* Adicionado text-white aqui */}
         <h1 className="text-2xl font-bold text-center mb-6">Login - Painel Admin</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -59,7 +58,7 @@ const handleSubmit = async (e) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-white" // Adicionado text-white
             />
           </div>
           <div>
@@ -70,7 +69,7 @@ const handleSubmit = async (e) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-white" // Adicionado text-white
             />
           </div>
           <button

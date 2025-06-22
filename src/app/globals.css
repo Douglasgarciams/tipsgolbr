@@ -24,3 +24,9 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+.login-background {
+  background-image: url('/images/fundologin.jpg'); /* Substitua pelo nome do seu arquivo */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  }
