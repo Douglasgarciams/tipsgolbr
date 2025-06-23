@@ -16,6 +16,9 @@ export default function AulasPage() {
         <p className="text-gray-300 mb-8">
           Aprenda os melhores métodos e estratégias para suas apostas.
         </p>
+        <p className="text-gray-300 mb-8">
+          AULAS PARA INICIANTES.
+        </p>
 
         {/* Contêiner para o Grid de Aulas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -34,7 +37,7 @@ export default function AulasPage() {
               <iframe
                 width="100%"
                 height="auto"
-                src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // <<<< VOLTANDO AO PLACEHOLDER
+                src="https://www.youtube.com/embed/WjoRWrNZ8fA?si=0C4GkhSpYsBtZvqk" // <<<< VOLTANDO AO PLACEHOLDER
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -43,27 +46,21 @@ export default function AulasPage() {
               ></iframe>
             </div>
           </div>
-
-          {/* Bloco de Aula 2 (Exemplo) */}
+{/* Bloco de Aula 2 */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-3">Estratégias de BACK a Favorito</h2>
-            <p className="text-gray-300 text-sm mb-3">
-              Assista a uma análise aprofundada: {" "}
-              <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID_HERE" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                Ver no YouTube
-              </a>
-            </p>
-          </div>
+            <h2 className="text-xl font-bold mb-3">Correct score ou resultado correto</h2>
 
-          {/* Bloco de Aula 3 (DUPLIQUE ESTE PARA MAIS AULAS) */}
-          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-3">Aula 3: Gestão de Banca Essencial</h2>
-            <img src="/images/banca-management.jpg" alt="Gestão de Banca" className="w-full h-auto rounded-md mb-3" />
+            <img
+              src="/images/correct.png"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
             <div className="aspect-w-16 aspect-h-9 mb-3">
               <iframe
                 width="100%"
                 height="auto"
-                src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // <<<< VOLTANDO AO PLACEHOLDER
+                src="https://www.youtube.com/embed/R-rkE6s0PNI?si=EjkLdZMFvooRpeLJ" // <<<< VOLTANDO AO PLACEHOLDER
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -72,17 +69,97 @@ export default function AulasPage() {
               ></iframe>
             </div>
           </div>
-
-          {/* Bloco de Aula 4 (DUPLIQUE ESTE PARA MAIS AULAS) */}
+{/* Bloco de Aula 3 */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-3">Aula 4: Mercados Alternativos</h2>
-            <img src="/images/alt-markets.jpg" alt="Mercados Alternativos" className="w-full h-auto rounded-md mb-3" />
+            <h2 className="text-xl font-bold mb-3">Match Odd - resultado final</h2>
+
+            <img
+              src="/images/match.jpg"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/ZokDDxxwNNA?si=VveTgGLmmmhuFjuf" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
           </div>
-
-          {/* Bloco de Aula 5 (DUPLIQUE ESTE PARA MAIS AULAS) - Ajuste para ser o 1º de uma nova linha ou remova se só quiser 4 por linha */}
+{/* Bloco de Aula 4 */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
-            <h2 className="text-xl font-bold mb-3">Aula 5: Psicologia nas Apostas</h2>
-            <img src="/images/psychology.jpg" alt="Psicologia" className="w-full h-auto rounded-md mb-3" />
+            <h2 className="text-xl font-bold mb-3">Over ou Unnder / Mais ou Menos</h2>
+
+            <img
+              src="/images/over.jpg"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/Dv4rNoaHfl0?si=Ex3sevxIaF8uQK7T" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+{/* Bloco de Aula 5 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Ambas marcam ou BTTS</h2>
+
+            <img
+              src="/images/ambas.jpg"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/Yt500QJkGYQ?si=nvZbx12O9mvyUMUM" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+{/* Bloco de Aula 6 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">O que é GAP</h2>
+
+            <img
+              src="/images/gap.jpg"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/um7P7BbMwHQ?si=iOAVNy45n864-l_w" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
           </div>
 
         </div> {/* Fim do contêiner grid */}
