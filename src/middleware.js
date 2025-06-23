@@ -10,8 +10,8 @@ const getJwtSecretKey = () => {
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // ROTAS PÚBLICAS (que não exigem login)
-  const publicRoutes = ['/login', '/cadastro', '/assinatura']; 
+  // ALTERADO AQUI: Adicionado '/aulas' às rotas públicas
+  const publicRoutes = ['/login', '/cadastro', '/assinatura', '/forgot-password', '/reset-password', '/aulas']; 
 
   // Se a rota for pública, deixa passar direto
   if (publicRoutes.includes(pathname)) {
@@ -54,7 +54,7 @@ export async function middleware(request) {
 }
 
 export const config = {
-  // NOVO MATCHER: Exclui APIs, _next, favicon.ico e agora também arquivos com extensões de imagem, css, js etc.
+  // Este matcher já exclui arquivos estáticos (imagens, etc.)
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.css$|.*\\.js$|.*\\.map$|.*\\.webp$).*)',
   ],

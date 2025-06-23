@@ -1,4 +1,4 @@
-// prisma/schema.prisma --- VERSÃO COM CAMPO 'isDeleted' EM ApostaFeita
+// prisma/schema.prisma --- VERSÃO COM PasswordResetToken
 
 generator client {
   provider = "prisma-client-js"
@@ -77,6 +77,7 @@ model User {
   subscriptionExpiresAt DateTime?
   criadoEm              DateTime           @default(now())
   apostasFeitas         ApostaFeita[]
+  passwordResetTokens   PasswordResetToken[] // NOVO: Relação para os tokens de reset
 }
 
 model Palpite {
@@ -100,7 +101,7 @@ model ApostaFeita {
   valorApostado         Float
   resultadoPNL          Float?
   data                  DateTime  @default(now())
-  isDeleted             Boolean   @default(false) // NOVO CAMPO: Para exclusão lógica
+  isDeleted             Boolean   @default(false)
   usuarioId             Int?
   palpiteId             Int? 
 
@@ -113,4 +114,15 @@ model ApostaFeita {
   usuario               User?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
   palpite               Palpite?  @relation(fields: [palpiteId], references: [id], onDelete: SetNull)
   @@unique([usuarioId, palpiteId])
+}
+
+// NOVO MODELO: Para gerenciar tokens de reset de senha
+model PasswordResetToken {
+  id          Int      @id @default(autoincrement())
+  token       String   @unique // O token único que será enviado por email
+  userId      Int      // O ID do usuário associado a este token
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade) // Se o user for deletado, o token também
+  expiresAt   DateTime // Data de expiração do token
+  createdAt   DateTime @default(now()) // Quando o token foi criado
+  usedAt      DateTime? // Quando o token foi usado (para invalidá-lo)
 }

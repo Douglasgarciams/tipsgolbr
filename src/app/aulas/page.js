@@ -1,4 +1,4 @@
-// src/app/aulas/page.js - COM LAYOUT DE 4 BLOCOS E SEM TEXTO DESCRITIVO (CORRIGIDO)
+// src/app/aulas/page.js - COM LAYOUT DE 4 BLOCOS E SEM TEXTO DESCRITIVO (VOLTANDO AO ORIGINAL DE TESTE)
 
 import Link from 'next/link';
 
@@ -34,7 +34,7 @@ export default function AulasPage() {
               <iframe
                 width="100%"
                 height="auto"
-                src="https://www.youtube.com/embed/WjoRWrNZ8fA?si=_vrTbJbl_IaTYIaK"
+                src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // <<<< VOLTANDO AO PLACEHOLDER
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -63,7 +63,7 @@ export default function AulasPage() {
               <iframe
                 width="100%"
                 height="auto"
-                src="https://youtu.be/xUUG2cAahas"
+                src="https://www.youtube.com/embed/YOUR_VIDEO_ID_HERE" // <<<< VOLTANDO AO PLACEHOLDER
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
