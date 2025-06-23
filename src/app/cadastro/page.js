@@ -1,4 +1,4 @@
-// src/app/cadastro/page.js
+// src/app/cadastro/page.js - COM IMAGEM DE FUNDO
 
 "use client";
 
@@ -9,7 +9,7 @@ export default function CadastroPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,19 +19,16 @@ export default function CadastroPage() {
     setError('');
     setMessage('');
 
-    // 1. Validação inicial: senhas conferem?
     if (password !== confirmPassword) {
       setError('As senhas não conferem.');
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      // 2. Monta o corpo da requisição para enviar à API
       const body = { email, password };
-      
-      // 3. Chama nossa futura API de cadastro
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,11 +38,9 @@ export default function CadastroPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        // Se a API retornar um erro (ex: email já existe), mostramos aqui
         throw new Error(data.message || 'Falha ao cadastrar');
       }
 
-      // 4. Se tudo der certo, mostra mensagem de sucesso
       setMessage('Usuário cadastrado com sucesso! Você já pode fazer o login.');
       setEmail('');
       setPassword('');
@@ -59,8 +54,10 @@ export default function CadastroPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
+    // Alterado aqui: Removidas bg-gray-900 e text-white, adicionada cadastro-background
+    <div className="min-h-screen cadastro-background flex items-center justify-center">
+      {/* O container do formulário com fundo cinza e transparência */}
+      <div className="bg-gray-800 bg-opacity-90 p-8 rounded-lg shadow-lg w-full max-w-sm text-white"> {/* Adicionado text-white aqui */}
         <h1 className="text-2xl font-bold text-center mb-6">Criar Conta</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -71,7 +68,7 @@ export default function CadastroPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-white" // Adicionado text-white
             />
           </div>
           <div>
@@ -83,7 +80,7 @@ export default function CadastroPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-white" // Adicionado text-white
             />
           </div>
           <div>
@@ -94,7 +91,7 @@ export default function CadastroPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-white" // Adicionado text-white
             />
           </div>
           <button

@@ -1,3 +1,5 @@
+/* src/app/globals.css - VERSÃO FINAL E CORRIGIDA */
+
 @import "tailwindcss";
 
 :root {
@@ -20,13 +22,45 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  /* REMOVIDO: background: var(--background); */
+  /* REMOVIDO: color: var(--foreground); */
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Regra para a página de login - CORRIGIDA AQUI! */
 .login-background {
-  background-image: url('/images/fundologin.jpg'); /* Substitua pelo nome do seu arquivo */
+  position: relative; /* Essencial para o ::before */
+  overflow: hidden;   /* Para que o blur não vaze para fora */
+}
+.login-background::before {
+  content: ""; /* Essencial para que pseudo-elementos apareçam */
+  position: absolute; /* Posição absoluta para cobrir o pai */
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1; /* Coloca o pseudo-elemento atrás do conteúdo */
+
+  background-image: url('/images/fundologin.jpg'); /* Sua imagem de fundo */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  }
+  filter: blur(3px); /* O desfoque aplicado SOMENTE À IMAGEM DE FUNDO */
+  -webkit-filter: blur(3px); /* Compatibilidade */
+}
+
+/* Regra para a página de cadastro - CORRIGIDA AQUI! */
+.cadastro-background {
+  position: relative; /* Essencial para o ::before */
+  overflow: hidden;   /* Para que o blur não vaze para fora */
+}
+.cadastro-background::before {
+  content: ""; /* Essencial para que pseudo-elementos apareçam */
+  position: absolute; /* Posição absoluta para cobrir o pai */
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1; /* Coloca o pseudo-elemento atrás do conteúdo */
+
+  background-image: url('/images/cadastro.jpg'); /* Sua imagem de fundo */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(3px); /* O desfoque aplicado SOMENTE À IMAGEM DE FUNDO */
+  -webkit-filter: blur(3px); /* Compatibilidade */
+}
