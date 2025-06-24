@@ -22,7 +22,7 @@ export default function AulasPage() {
         </p>
 
         {/* Contêiner para o Grid de Aulas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
           {/* Bloco de Aula 1 */}
           <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
