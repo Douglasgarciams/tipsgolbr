@@ -101,12 +101,13 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+      
 
       {/* Imagem menor (logo) abaixo do formulário */}
-      <img
-        src="/images/responsavel.png"
-        alt="Logo do Site"
-        className="block mx-auto mt-8 w-128 h-auto"
+      <img 
+        src="/images/responsavel.png" 
+        alt="Logo do Site" 
+        className="block mx-auto mt-8 w-48 h-auto" // ALTERADO: w-150 para w-48
       />
 
     </div>
