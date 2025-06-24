@@ -16,6 +16,7 @@ export default function AulasPage() {
         <p className="text-gray-300 mb-8">
           Aprenda os melhores métodos e estratégias para suas apostas.
         </p>
+
         <p className="text-gray-300 mb-8">
           AULAS PARA INICIANTES.
         </p>
@@ -153,6 +154,157 @@ export default function AulasPage() {
                 width="100%"
                 height="auto"
                 src="https://www.youtube.com/embed/um7P7BbMwHQ?si=iOAVNy45n864-l_w" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+          
+          <form className="space-y-6"></form>
+            <p className="text-gray-300 space-y-8">
+              AULAS DOS MÉTODOS.
+            </p>
+            <form className="space-y-6"></form>
+
+            {/* Bloco de Aula 7 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 0x0</h2>
+
+            <img
+              src="/images/lay 0x0.jpg"
+              alt="Exemplo do Método Lay 0x0"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/QDOVIYMwVj4?si=6-Sii0YSbhZlO1Cx" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+
+
+{/* Bloco de Aula 8 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 0x1</h2>
+
+            <img
+              src="/images/lay 0x1.jpg"
+              alt="Exemplo do Método Lay 0x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/Nw8OAImijuI?si=4RR1s6OoJP8BZ6cF" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+
+{/* Bloco de Aula 9 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 0x2</h2>
+
+            <img
+              src="/images/lay 0x2.jpg"
+              alt="Exemplo do Método Lay 0x2"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/aPdV3YVtjSQ?si=-sP9vj_Q_BTYTodt" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+
+{/* Bloco de Aula 10 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 0x3</h2>
+
+            <img
+              src="/images/lay 0x3.jpg"
+              alt="Exemplo do Método Lay 0x2"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/O1WcDawEhFM?si=wkcdp7jv-TobUMNV" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+
+          {/* Bloco de Aula 11 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 1x3</h2>
+
+            <img
+              src="/images/lay 1x3.jpg"
+              alt="Exemplo do Método Lay 1x3"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/6ye5UpMI6ro?si=q7WWlF4VPLvBhnPe" // <<<< VOLTANDO AO PLACEHOLDER
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="rounded-md"
+              ></iframe>
+            </div>
+          </div>
+
+          {/* Bloco de Aula 12 */}
+          <div className="bg-gray-800 p-4 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-10">Lay 1x0</h2>
+
+            <img
+              src="/images/lay 1x0.jpg"
+              alt="Exemplo do Método Lay 1x0"
+              className="w-full h-auto rounded-md mb-3"
+            />
+
+            <div className="aspect-w-16 aspect-h-9 mb-3">
+              <iframe
+                width="100%"
+                height="auto"
+                src="https://www.youtube.com/embed/Dc0Tjd7ul-4?si=Q5tfE77iwhdVNbdw" // <<<< VOLTANDO AO PLACEHOLDER
                 title="YouTube video player"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
