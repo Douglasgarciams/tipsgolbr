@@ -53,6 +53,9 @@ export default function LoginPage() {
         <Link href="/aulas" className="text-white text-base md:text-lg font-bold hover:underline bg-purple-600 px-3 py-1 rounded-md shadow-lg">
           Aulas
         </Link>
+        <Link href="/contato" className="text-white text-base md:text-lg font-bold hover:underline bg-blue-600 px-3 py-1 rounded-md shadow-lg">
+          Contato
+        </Link>
       </div>
 
       {/* O container do formulário de login */}

@@ -10,8 +10,8 @@ const getJwtSecretKey = () => {
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
-  // ALTERADO AQUI: Adicionado '/aulas' às rotas públicas
-  const publicRoutes = ['/login', '/cadastro', '/assinatura', '/forgot-password', '/reset-password', '/aulas']; 
+  // ALTERADO AQUI: Adicionado '/contato' às rotas públicas
+  const publicRoutes = ['/login', '/cadastro', '/assinatura', '/forgot-password', '/reset-password', '/aulas', '/contato']; 
 
   // Se a rota for pública, deixa passar direto
   if (publicRoutes.includes(pathname)) {
@@ -29,24 +29,21 @@ export async function middleware(request) {
   try {
     const { payload } = await jwtVerify(token, getJwtSecretKey());
 
-    // Se for ADMIN, deixa passar para qualquer lugar
     if (payload.role === 'ADMIN') {
       return NextResponse.next();
     }
 
-    // Se for USER, verifica assinatura e não permite acesso a /admin
     if (payload.role === 'USER') {
       if (pathname.startsWith('/admin')) {
-        return NextResponse.redirect(new URL('/', request.url)); // Redireciona user de /admin para home
+        return NextResponse.redirect(new URL('/', request.url));
       }
       const isSubscribed = payload.subscriptionStatus === 'ACTIVE' && new Date(payload.subscriptionExpiresAt) > new Date();
       if (!isSubscribed) {
-        return NextResponse.redirect(new URL('/assinatura', request.url)); // Redireciona user sem assinatura
+        return NextResponse.redirect(new URL('/assinatura', request.url));
       }
     }
-    return NextResponse.next(); // Usuário logado e permitido, segue
+    return NextResponse.next();
   } catch (err) {
-    // Se o token for inválido/expirado, redireciona para login e apaga cookie
     const response = NextResponse.redirect(loginUrl);
     response.cookies.delete('sessionToken');
     return response;
@@ -54,7 +51,6 @@ export async function middleware(request) {
 }
 
 export const config = {
-  // Este matcher já exclui arquivos estáticos (imagens, etc.)
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.css$|.*\\.js$|.*\\.map$|.*\\.webp$).*)',
   ],
