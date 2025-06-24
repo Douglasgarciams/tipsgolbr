@@ -107,7 +107,7 @@ export default function LoginPage() {
       <img 
         src="/images/responsavel.png" 
         alt="Logo do Site" 
-        className="block mx-auto mt-8 w-150 h-auto" // ALTERADO: w-150 para w-48
+        className="block mx-auto mt-8 w-48 h-auto" // ALTERADO: w-150 para w-48
       />
 
     </div>
