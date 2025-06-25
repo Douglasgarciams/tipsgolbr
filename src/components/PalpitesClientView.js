@@ -1,8 +1,8 @@
 // src/components/PalpitesClientView.js
 
-"use client";
+"use client"; // Este componente já é um Client Component
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react'; // Adicionado useEffect
 import PalpiteCard from '@/components/PalpiteCard';
 
 const agruparPalpites = (palpites) => {
@@ -39,7 +39,11 @@ const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
     return (
         <section className="mb-12">
             <h2 className="text-3xl font-bold text-white border-l-4 border-green-500 pl-4 mb-6">{titulo}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{palpitesDoGrupo.map(palpite => (<PalpiteCard key={palpite.id} palpite={palpite} />))}</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {palpitesDoGrupo.map(palpite => (
+                    <PalpiteCard key={palpite.id} palpite={palpite} />
+                ))}
+            </div>
         </section>
     );
 };
@@ -47,8 +51,15 @@ const PalpiteSection = ({ titulo, palpitesDoGrupo }) => {
 
 export default function PalpitesClientView({ palpites }) {
     const [filtroAtivo, setFiltroAtivo] = useState('Todos');
+    const [isClient, setIsClient] = useState(false); // NOVO: Estado para controlar a hidratação
+
+    // NOVO: Define que o componente está no cliente após a montagem inicial
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const competicoes = useMemo(() => {
+        // Isso ainda pode ser calculado no servidor, mas só será exibido no cliente
         const lista = palpites.map(p => p.competicao);
         return ['Todos', ...new Set(lista)];
     }, [palpites]);
@@ -60,8 +71,15 @@ export default function PalpitesClientView({ palpites }) {
         return palpites.filter(p => p.competicao === filtroAtivo);
     }, [filtroAtivo, palpites]);
 
+    // O agrupamento, que usa new Date(), será efetivamente utilizado para renderização no cliente
     const palpitesAgrupados = agruparPalpites(palpitesFiltrados);
 
+    if (!isClient) {
+        // Renderiza um fallback simples no servidor para evitar hidratação inconsistente
+        return <p className="text-center text-gray-400 text-xl">Carregando palpites...</p>;
+    }
+
+    // O conteúdo real só é renderizado após a hidratação no cliente
     return (
         <div>
             <div className="mb-10">
