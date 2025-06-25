@@ -1,12 +1,11 @@
-// src/app/api/palpites/[id]/route.js
-
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
+  let resolvedParams; // Declare resolvedParams here
   try {
-    // Await params to ensure it's fully resolved before accessing properties
-    const resolvedParams = await params;
+    // Assign resolvedParams here
+    resolvedParams = await params;
     const id = parseInt(resolvedParams.id);
 
     const palpite = await prisma.palpite.findUnique({
@@ -19,15 +18,17 @@ export async function GET(request, { params }) {
 
     return NextResponse.json(palpite);
   } catch (error) {
-    console.error(`Erro ao buscar palpite ${params.id}:`, error); // Keep params.id for logging, it might still be accessible as a string for context
+    // Now resolvedParams is accessible here
+    console.error(`Erro ao buscar palpite ${resolvedParams?.id || 'ID desconhecido'}:`, error);
     return NextResponse.json({ message: 'Erro ao buscar palpite' }, { status: 500 });
   }
 }
 
 export async function PUT(request, { params }) {
+  let resolvedParams; // Declare resolvedParams here
   try {
-    // Await params to ensure it's fully resolved before accessing properties
-    const resolvedParams = await params;
+    // Assign resolvedParams here
+    resolvedParams = await params;
     const id = parseInt(resolvedParams.id);
     const data = await request.json();
 
@@ -47,16 +48,17 @@ export async function PUT(request, { params }) {
     });
     return NextResponse.json(updatedPalpite);
   } catch (error) {
-    console.error(`Erro ao atualizar palpite (ID: ${params.id}):`, error); // Keep params.id for logging
+    // Now resolvedParams is accessible here
+    console.error(`Erro ao atualizar palpite (ID: ${resolvedParams?.id || 'ID desconhecido'}):`, error);
     return NextResponse.json({ message: "Erro ao atualizar palpite" }, { status: 500 });
   }
 }
 
-// Apenas UMA função DELETE agora!
 export async function DELETE(request, { params }) {
+  let resolvedParams; // Declare resolvedParams here
   try {
-    // Await params to ensure it's fully resolved before accessing properties
-    const resolvedParams = await params;
+    // Assign resolvedParams here
+    resolvedParams = await params;
     const id = parseInt(resolvedParams.id);
     await prisma.palpite.delete({
       where: { id: id },
@@ -64,7 +66,8 @@ export async function DELETE(request, { params }) {
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error(`Erro ao deletar palpite (ID: ${params.id}):`, error); // Keep params.id for logging
+    // Now resolvedParams is accessible here
+    console.error(`Erro ao deletar palpite (ID: ${resolvedParams?.id || 'ID desconhecido'}):`, error);
     return NextResponse.json({ message: 'Erro ao deletar palpite' }, { status: 500 });
   }
 }

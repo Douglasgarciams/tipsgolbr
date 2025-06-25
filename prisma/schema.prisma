@@ -30,7 +30,10 @@ enum MetodoDeAposta {
   LAY_0X1
   LAY_0X2
   LAY_0X3
-  LAY_GOLEADA
+  LAY_GOLEADA            // <-- ESTE FOI ADICIONADO DE VOLTA AQUI
+  LAY_GOLEADACASA
+  LAY_GOLEADAVISITANTE
+  LAY_1X2
   LAY_1X0
   LAY_2X0
   LAY_3X0
@@ -69,13 +72,13 @@ enum MetodoDeAposta {
 }
 
 model User {
-  id                    Int                @id @default(autoincrement())
-  email                 String             @unique
+  id                    Int                  @id @default(autoincrement())
+  email                 String               @unique
   password              String
-  role                  Role               @default(USER)
-  subscriptionStatus    SubscriptionStatus @default(INACTIVE)
+  role                  Role                 @default(USER)
+  subscriptionStatus    SubscriptionStatus   @default(INACTIVE)
   subscriptionExpiresAt DateTime?
-  criadoEm              DateTime           @default(now())
+  criadoEm              DateTime             @default(now())
   apostasFeitas         ApostaFeita[]
   passwordResetTokens   PasswordResetToken[] // NOVO: Relação para os tokens de reset
 }
@@ -97,22 +100,22 @@ model Palpite {
 }
 
 model ApostaFeita {
-  id                    Int       @id @default(autoincrement())
-  valorApostado         Float
-  resultadoPNL          Float?
-  data                  DateTime  @default(now())
-  isDeleted             Boolean   @default(false)
-  usuarioId             Int?
-  palpiteId             Int? 
+  id                  Int       @id @default(autoincrement())
+  valorApostado       Float
+  resultadoPNL        Float?
+  data                DateTime  @default(now())
+  isDeleted           Boolean   @default(false)
+  usuarioId           Int?
+  palpiteId           Int?
 
-  palpiteJogo           String?
-  palpiteMetodo         String?
-  palpiteCompeticao     String?
-  palpiteOdds           Float?
-  palpiteLink           String?
+  palpiteJogo         String?
+  palpiteMetodo       String?
+  palpiteCompeticao   String?
+  palpiteOdds         Float?
+  palpiteLink         String?
 
-  usuario               User?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
-  palpite               Palpite?  @relation(fields: [palpiteId], references: [id], onDelete: SetNull)
+  usuario             User?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  palpite             Palpite?  @relation(fields: [palpiteId], references: [id], onDelete: SetNull)
   @@unique([usuarioId, palpiteId])
 }
 
