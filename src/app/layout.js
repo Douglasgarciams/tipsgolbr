@@ -10,6 +10,9 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // ADICIONE ESTA LINHA:
+  console.log('LAYOUT.JS: Aplicativo Next.js foi iniciado no Render!'); 
+
   return (
     <html lang="pt-BR">
       <body className={`${inter.className} bg-gray-900`}>
