@@ -1,5 +1,3 @@
-// src/app/api/auth/forgot-password/route.js - AGORA SIM: VERSÃO FINAL E COMPLETA
-
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import crypto from 'crypto';
@@ -38,10 +36,19 @@ export async function POST(request) {
       },
     });
 
-    // 5. Construir o link de reset (AGORA SIM: SINTAXE CORRETA E VERIFICADA)
-    const resetLink = `${request.nextUrl.origin}/reset-password?token=${resetToken}`;
+    // 5. Construir o link de reset
+    // ATENÇÃO: Usar NEXT_PUBLIC_APP_BASE_URL para garantir a URL pública em produção no Render
+    const appBaseUrl = process.env.NEXT_PUBLIC_APP_BASE_URL;
+
+    if (!appBaseUrl) {
+        // Se a variável de ambiente não estiver configurada (o que não deve acontecer após o Passo 1)
+        console.error("ERRO: Variável de ambiente NEXT_PUBLIC_APP_BASE_URL não está configurada no ambiente.");
+        return NextResponse.json({ message: 'Erro interno ao processar a solicitação: URL base do aplicativo não configurada.' }, { status: 500 });
+    }
+
+    const resetLink = `${appBaseUrl}/reset-password?token=${resetToken}`;
     
-    // 6. Enviar o email com Resend (AGORA SIM: CONTEÚDO HTML COMPLETO E CORRETO)
+    // 6. Enviar o email com Resend
     const { data, error } = await resend.emails.send({
       from: 'TipsGolBR <suporte@tipsgolbr.com.br>', // <<<<<<< IMPORTANTE: Substitua pelo seu email verificado
       to: [user.email],
