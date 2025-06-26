@@ -36,23 +36,25 @@ export async function GET(request) {
     try {
         const apostas = await prisma.apostaFeita.findMany({
             where: { usuarioId: userId },
-            include: {
-                palpite: {
-                    select: {
-                        jogo: true,
-                        palpite: true,
-                        link: true,
-                        oddpesquisada: true,
-                        metodoAposta: true,
-                    }
-                }
-            },
+            // REMOVIDO: A inclusão do 'palpite' e seus campos, pois o metodo está copiado no ApostaFeita
+            // include: {
+            //     palpite: {
+            //         select: {
+            //             jogo: true,
+            //             palpite: true, // Era o campo string que guardava o nome do método
+            //             link: true,
+            //             oddpesquisada: true,
+            //             metodoAposta: true, // O enum do método
+            //         }
+            //     }
+            // },
             orderBy: { data: 'desc' },
         });
 
         console.log('API user-apostas: Apostas encontradas para o usuário:', apostas.length); 
         apostas.forEach(aposta => {
-            console.log('API user-apostas: Detalhe da aposta (antes do cálculo):', aposta.id, 'Método Enum:', aposta.palpite?.metodoAposta, 'Valor Apostado:', aposta.valorApostado, 'PNL:', aposta.resultadoPNL); // LOG
+            // Agora o log usa aposta.palpiteMetodo
+            console.log('API user-apostas: Detalhe da aposta (antes do cálculo):', aposta.id, 'Método Copiado:', aposta.palpiteMetodo, 'Valor Apostado:', aposta.valorApostado, 'PNL:', aposta.resultadoPNL); 
         });
 
         // --- Calcular Resumo PNL e ROI Geral ---
@@ -64,15 +66,15 @@ export async function GET(request) {
         const resultadosPorMetodo = {};
 
         apostas.forEach(aposta => {
-            const metodo = aposta.palpite?.metodoAposta || 'OUTROS';
-            const valorApostado = aposta.valorApostado; // Este é o valor da stake individual
+            // AGORA USANDO aposta.palpiteMetodo
+            const metodo = aposta.palpiteMetodo || 'OUTROS'; 
+            const valorApostado = aposta.valorApostado; 
             const resultadoPNL = aposta.resultadoPNL || 0;
 
-            // LOG: Verificando o valorApostado para cada iteração
-            console.log(`API user-apostas: Processando aposta ID <span class="math-inline">\{aposta\.id\} \(</span>{metodo}). Valor Apostado: ${valorApostado}, PNL: ${resultadoPNL}`); // NOVO LOG
+            console.log(`API user-apostas: Processando aposta ID ${aposta.id} (${metodo}). Valor Apostado: ${valorApostado}, PNL: ${resultadoPNL}`); 
 
             // Cálculos gerais
-            totalApostado += valorApostado; // Acumula o geral
+            totalApostado += valorApostado; 
             if (resultadoPNL >= 0) {
                 totalLucro += resultadoPNL;
             } else {
@@ -84,16 +86,15 @@ export async function GET(request) {
                 resultadosPorMetodo[metodo] = {
                     totalLucro: 0,
                     totalPrejuizo: 0,
-                    totalApostado: 0, // Inicializa para este método
+                    totalApostado: 0, 
                     saldoFinal: 0,
                     roi: 0,
                     count: 0
                 };
             }
-            // LOG: Verificando a acumulação por método
-            console.log(`  -> Antes: ${metodo} totalApostado: ${resultadosPorMetodo[metodo].totalApostado}. Adicionando: ${valorApostado}`); // NOVO LOG
-            resultadosPorMetodo[metodo].totalApostado += valorApostado; // Acumula para o método
-            console.log(`  -> Depois: ${metodo} totalApostado: ${resultadosPorMetodo[metodo].totalApostado}`); // NOVO LOG
+            console.log(`   -> Antes: ${metodo} totalApostado: ${resultadosPorMetodo[metodo].totalApostado}. Adicionando: ${valorApostado}`); 
+            resultadosPorMetodo[metodo].totalApostado += valorApostado; 
+            console.log(`   -> Depois: ${metodo} totalApostado: ${resultadosPorMetodo[metodo].totalApostado}`); 
 
             if (resultadoPNL >= 0) {
                 resultadosPorMetodo[metodo].totalLucro += resultadoPNL;
@@ -107,8 +108,7 @@ export async function GET(request) {
         // Finaliza cálculos por método (ROI) e formata para exibição
         const metodosFormatados = Object.keys(resultadosPorMetodo).map(metodoKey => {
             const res = resultadosPorMetodo[metodoKey];
-            // LOG: Verificando o totalApostado final do método antes de enviar
-            console.log(`API user-apostas: Finalizando cálculo para ${metodoKey}. Total Apostado final: ${res.totalApostado}`); // NOVO LOG
+            console.log(`API user-apostas: Finalizando cálculo para ${metodoKey}. Total Apostado final: ${res.totalApostado}`); 
             const roi = res.totalApostado > 0 ? (res.saldoFinal / res.totalApostado) * 100 : 0;
             return {
                 metodo: formatMetodoName(metodoKey), 
@@ -117,7 +117,7 @@ export async function GET(request) {
                 saldoFinal: res.saldoFinal,
                 roi: roi,
                 count: res.count,
-                totalApostado: res.totalApostado // Garante que seja incluído aqui
+                totalApostado: res.totalApostado 
             };
         }).sort((a, b) => b.saldoFinal - a.saldoFinal); 
 
@@ -132,8 +132,8 @@ export async function GET(request) {
             totalApostado, 
         };
 
-        console.log('API user-apostas: Resumo PNL Geral Final:', resumoPNL); // LOG
-        console.log('API user-apostas: Resultados por Método Final:', metodosFormatados); // LOG
+        console.log('API user-apostas: Resumo PNL Geral Final:', resumoPNL); 
+        console.log('API user-apostas: Resultados por Método Final:', metodosFormatados); 
 
         return NextResponse.json({ apostas, resumoPNL, resultadosPorMetodo: metodosFormatados }, { status: 200 });
 
