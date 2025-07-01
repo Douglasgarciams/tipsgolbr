@@ -35,6 +35,13 @@ export default async function HomePage() {
           >
             Aulas
           </Link>
+          {/* NOVO: Botão para a Calculadora Back/Lay */}
+          <Link
+            href="/calculadora"
+            className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
+          >
+            Calculadora Back/Lay
+            </Link>
         </div>
 
       </div>
