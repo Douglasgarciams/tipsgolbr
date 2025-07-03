@@ -32,14 +32,14 @@ export async function POST(request) {
     };
 
     // 4. Cria o token
-    const token = sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' });
+    const token = sign(tokenPayload, JWT_SECRET, { expiresIn: '24h' });
 
     // 5. Salva o token no cookie
     const serializedCookie = serialize('sessionToken', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60,
+      maxAge: 60 * 60 * 24,
       path: '/',
     });
 
