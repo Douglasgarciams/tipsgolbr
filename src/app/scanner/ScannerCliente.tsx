@@ -9,41 +9,9 @@ import { GameTimelineChart } from './GameTimelineChart';
 
 // --- Componente para a Tabela de Estatísticas Detalhada ---
 const DetailedStats = ({ game, events }: { game: any, events: any[] }) => {
-  if (!game.statistics || game.statistics.length === 0) {
-    return (
-      <div className="text-center text-xs text-gray-500 py-10">
-        <p>Aguardando estatísticas...</p>
-      </div>
-    );
-  }
+
   const homeTeamId = game.teams.home.id;
   const awayTeamId = game.teams.away.id;
-
-  const calculatePressure = (teamId: number) => {
-    if (!events) return 0;
-    return events.reduce((score, event) => {
-      if (event.team.id !== teamId) return score;
-      const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
-      return score + (weights[event.type] || 0);
-    }, 0);
-  };
-
-  const homePressure = calculatePressure(homeTeamId);
-  const awayPressure = calculatePressure(awayTeamId);
-
-  const getStat = (type: string) => {
-    const homeStats = game.statistics.find((s: any) => s.team.id === homeTeamId)?.statistics;
-    const awayStats = game.statistics.find((s: any) => s.team.id === awayTeamId)?.statistics;
-    const homeStat = homeStats?.find((stat: any) => stat.type === type)?.value ?? 0;
-    const awayStat = awayStats?.find((stat: any) => stat.type === type)?.value ?? 0;
-    const parseValue = (val: any) => {
-      if (typeof val === 'string' && val.includes('%')) {
-        return parseFloat(val.replace('%', ''));
-      }
-      return Number(val);
-    };
-    return { home: parseValue(homeStat), away: parseValue(awayStat) };
-  };
 
   // --- NOVA LÓGICA PARA CONTAR SUBSTITUIÇÕES ---
   const substitutions = useMemo(() => {
@@ -62,6 +30,44 @@ const DetailedStats = ({ game, events }: { game: any, events: any[] }) => {
     }
     return { home, away };
   }, [events, homeTeamId]);
+
+  if (!game.statistics || game.statistics.length === 0) {
+    return (
+      <div className="text-center text-xs text-gray-500 py-10">
+        <p>Aguardando estatísticas...</p>
+      </div>
+    );
+  }
+  
+  const calculatePressure = (teamId: number) => {
+    if (!events) return 0;
+    return events.reduce((score, event) => {
+      if (event.team.id !== teamId) return score;
+      const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
+      return score + (weights[event.type] || 0);
+    }, 0);
+  };
+
+  const homePressure = calculatePressure(homeTeamId);
+  const awayPressure = calculatePressure(awayTeamId);
+
+  
+
+  const getStat = (type: string) => {
+    const homeStats = game.statistics.find((s: any) => s.team.id === homeTeamId)?.statistics;
+    const awayStats = game.statistics.find((s: any) => s.team.id === awayTeamId)?.statistics;
+    const homeStat = homeStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+    const awayStat = awayStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+    const parseValue = (val: any) => {
+      if (typeof val === 'string' && val.includes('%')) {
+        return parseFloat(val.replace('%', ''));
+      }
+      return Number(val);
+    };
+    return { home: parseValue(homeStat), away: parseValue(awayStat) };
+  };
+
+  
 
   const statsList = [
     { label: 'Chutes no Gol', type: 'Shots on Goal', icon: <Target size={14} className="text-gray-500" /> },
