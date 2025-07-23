@@ -562,7 +562,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return indexA - indexB;
     });
 
-  }, [pageData, activeDate, searchQuery, ALLOWED_LEAGUE_IDS]);
+  }, [pageData, activeDate, searchQuery,]);
 
   if (!pageData || !pageData.fixtures) {
     return <div className="text-center text-amber-500">Falha ao carregar dados iniciais.</div>;
