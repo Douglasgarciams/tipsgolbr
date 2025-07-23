@@ -1,6 +1,6 @@
 // ARQUIVO: src/app/jogos-do-dia/JogosCliente.tsx
 'use client';
-
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { LoaderCircle, Search, ChevronDown, BrainCircuit, X } from 'lucide-react';
@@ -562,7 +562,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return indexA - indexB;
     });
 
-  }, [pageData, activeDate, searchQuery]);
+  }, [pageData, activeDate, searchQuery, ALLOWED_LEAGUE_IDS]);
 
   if (!pageData || !pageData.fixtures) {
     return <div className="text-center text-amber-500">Falha ao carregar dados iniciais.</div>;

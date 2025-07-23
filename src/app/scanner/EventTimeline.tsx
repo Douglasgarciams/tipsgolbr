@@ -56,7 +56,7 @@ export const EventTimeline = ({ game }) => {
             <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full">
                 <line x1="0" y1={chartHeight/2} x2={chartWidth} y2={chartHeight/2} stroke="#e5e7eb" strokeWidth="2" />
                 {eventMarkers.map((marker, idx) => (
-                    <g key={idx} transform={`translate(${marker.minute * 8}, ${marker.side === 'home' ? 10 : 35})`} onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, content: `${marker.minute}' - ${marker.description}` })} onMouseLeave={() => setTooltip(null)} style={{ cursor: 'pointer' }}>
+                    <g key={idx} transform={`translate(${marker.minute * 8}, ${marker.side === 'home' ? 10 : 35})`} onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, content: `${marker.minute}&apos; - ${marker.description}` })} onMouseLeave={() => setTooltip(null)} style={{ cursor: 'pointer' }}>
                         {marker.icon}
                     </g>
                 ))}
