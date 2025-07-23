@@ -42,6 +42,29 @@ export default async function HomePage() {
           >
             Calculadora Back/Lay
             </Link>
+
+            {/* NOVO: Botão para grafico de resultados*/}
+            <Link
+            href="/analise-resultados"
+            className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
+          >
+            Análise Gráfica
+            </Link>
+            {/* 👇 BOTÃO ADICIONADO 👇 */}
+          <Link
+            href="/jogos-do-dia"
+            className="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
+          >
+            Estudo Pré-Live
+            </Link>
+
+            {/* 👇 BOTÃO ADICIONADO 👇 */}
+            <Link
+            href="/scanner"
+            className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
+          >
+            Scanner Ao Vivo
+        </Link>
         </div>
 
       </div>

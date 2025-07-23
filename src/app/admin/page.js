@@ -41,6 +41,8 @@ export default function AdminPage() {
   const [message, setMessage] = useState('');
   const [editingId, setEditingId] = useState(null);
 
+  const [userSearch, setUserSearch] = useState('');
+
   const [palpites, setPalpites] = useState([]);
   const [users, setUsers] = useState([]);
   const router = useRouter();
@@ -164,7 +166,7 @@ export default function AdminPage() {
   };
 
   const handleActivateSubscription = async (userId) => { 
-    if (window.confirm('Ativar a assinatura por 30 dias para este usuário?')) {
+    if (window.confirm('Ativar a assinatura por 32 dias para este usuário?')) {
                 try {
                     const res = await fetch(`/api/users/${userId}/activate`, { method: 'POST' });
                     if (!res.ok) throw new Error('Falha ao ativar a assinatura');
@@ -287,10 +289,28 @@ export default function AdminPage() {
         {/* SEÇÃO DE GERENCIAMENTO DE USUÁRIOS - APENAS RENDERIZA QUANDO NO CLIENTE */}
         <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-4">Gerenciamento de Usuários</h2>
+          {/* ADICIONE O CAMPO DE BUSCA AQUI */}
+  <div className="mb-6">
+    <label htmlFor="user-search" className="block text-sm font-medium text-gray-300 mb-1">
+      Buscar Usuário por Email
+    </label>
+    <input
+      type="text"
+      id="user-search"
+      value={userSearch}
+      onChange={(e) => setUserSearch(e.target.value)}
+      placeholder="Digite o email do usuário..."
+      className="block w-full bg-gray-700 border-gray-600 rounded-md text-white"
+    />
+  </div>
           {isClient ? ( // <--- ADICIONADO AQUI
             <div className="space-y-4">
               {users.length > 0 ? (
-                users.map(user => (
+                users
+                .filter(user => 
+                  user.email.toLowerCase().includes(userSearch.toLowerCase())
+                )
+                .map(user => (
                   <div key={user.id} className="grid grid-cols-1 md:grid-cols-3 items-center bg-gray-700 p-4 rounded-md gap-4">
                     <div>
                       <p className="font-bold truncate">{user.email}</p>
@@ -304,7 +324,7 @@ export default function AdminPage() {
                       {user.subscriptionStatus === 'ACTIVE' ? (
                         <button onClick={() => handleDeactivateSubscription(user.id)} className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded-md">Desativar</button>
                       ) : (
-                        <button onClick={() => handleActivateSubscription(user.id)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Ativar por 30 dias</button>
+                        <button onClick={() => handleActivateSubscription(user.id)} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md">Ativar por 32 dias</button>
                       )}
                     </div>
                   </div>
