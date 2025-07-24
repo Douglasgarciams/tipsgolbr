@@ -135,7 +135,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
     setTooltip({
       x: e.clientX,
       y: e.clientY,
-      content: `${marker.minute}&apos; - ${marker.description}`,
+      content: `${marker.minute} - ${marker.description}`,
     })
   }
   onMouseLeave={() => setTooltip(null)}
