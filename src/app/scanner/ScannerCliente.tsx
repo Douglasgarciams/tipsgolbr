@@ -1,5 +1,5 @@
 'use client';
-
+import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { Clock, Flag, Star, Search, ChevronLeft, ChevronRight, BrainCircuit, ShieldCheck, Zap, Target, Shield, AlertCircle, Gauge, ArrowLeftRight } from 'lucide-react';
@@ -548,6 +548,13 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
 
     return (
         <div className="space-y-6">
+          <div className="flex justify-start">
+            <Link href="/">
+                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
+                    <Home size={18} /> Ir para a Página Principal
+                </button>
+            </Link>
+        </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg shadow-md">
                 <div>
                     <label htmlFor="league-filter" className="text-sm font-medium text-gray-700">Filtrar por Campeonato:</label>
