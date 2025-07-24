@@ -135,6 +135,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
     setTooltip({
       x: e.clientX,
       y: e.clientY,
+      // eslint-disable-next-line react/no-unescaped-entities
       content: `${marker.minute}${String.fromCharCode(39)} - ${marker.description}`
     })
   }
