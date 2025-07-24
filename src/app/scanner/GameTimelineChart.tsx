@@ -128,7 +128,20 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
               const yOffset = (eventMarkers.filter(m => m.minute === marker.minute).indexOf(marker)) * 30;
               const yPosition = marker.side === 'home' ? midLine - 30 - yOffset : midLine + 30 + yOffset;
               return (
-                  <g key={idx} transform={`translate(${marker.minute * 8}, ${yPosition})`} onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, content: `${marker.minute}&apos; - ${marker.description}` })} onMouseLeave={() => setTooltip(null)} style={{ cursor: 'pointer' }}>
+                  <g
+  key={idx}
+  transform={`translate(${marker.minute * 8}, ${yPosition})`}
+  onMouseEnter={(e) =>
+    setTooltip({
+      x: e.clientX,
+      y: e.clientY,
+      content: `${marker.minute}&apos; - ${marker.description}`,
+    })
+  }
+  onMouseLeave={() => setTooltip(null)}
+  style={{ cursor: 'pointer' }}
+>
+
                       {marker.icon}
                   </g>
               )

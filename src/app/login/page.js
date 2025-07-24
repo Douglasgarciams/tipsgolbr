@@ -3,6 +3,7 @@
 import { useState } from 'react'; // <<<<<<< CORRIGIDO AQUI: DE '=' PARA 'FROM'
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -104,11 +105,13 @@ export default function LoginPage() {
       
 
       {/* Imagem menor (logo) abaixo do formulário */}
-      <img 
-        src="/images/responsavel.png" 
-        alt="Logo do Site" 
-        className="block mx-auto mt-8 w-96 h-auto" // ALTERADO: w-150 para w-48
-      />
+  <Image 
+    src="/images/responsavel.png"
+    alt="Logo do Site"
+    width={384}  // equivalente ao Tailwind w-96
+    height={0}   // Next.js exige height, mas vamos ajustar com 'auto'
+    style={{ height: 'auto', width: '20%' }}
+  />
 
     </div>
   );
