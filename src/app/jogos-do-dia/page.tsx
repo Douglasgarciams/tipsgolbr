@@ -18,6 +18,8 @@ async function getInitialData() {
   }
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function JogosDoDiaPage() {
   const initialData = await getInitialData();
   
