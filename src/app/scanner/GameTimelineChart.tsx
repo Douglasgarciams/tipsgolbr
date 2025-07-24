@@ -135,7 +135,6 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
     setTooltip({
       x: e.clientX,
       y: e.clientY,
-      // eslint-disable-next-line react/no-unescaped-entities
       content: `${marker.minute}${String.fromCharCode(39)} - ${marker.description}`
     })
   }
@@ -161,7 +160,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
                         fill="#080808ff" 
                         textAnchor="middle"
                       >
-                          {minute}'
+                          {minute}&#39;
                       </text>
                   );
               }
