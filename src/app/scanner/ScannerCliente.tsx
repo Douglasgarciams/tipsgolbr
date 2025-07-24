@@ -11,8 +11,7 @@ import { GameTimelineChart } from './GameTimelineChart';
 const DetailedStats = ({ game, events }: { game: any, events: any[] }) => {
 
   const homeTeamId = game.teams.home.id;
-  const awayTeamId = game.teams.away.id;
-
+  
   // --- NOVA LÓGICA PARA CONTAR SUBSTITUIÇÕES ---
   const substitutions = useMemo(() => {
     let home = 0;
@@ -38,6 +37,8 @@ const DetailedStats = ({ game, events }: { game: any, events: any[] }) => {
       </div>
     );
   }
+
+  const awayTeamId = game.teams.away.id;
 
   const calculatePressure = (teamId: number) => {
     if (!events) return 0;
