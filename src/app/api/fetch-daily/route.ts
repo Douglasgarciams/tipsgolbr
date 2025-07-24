@@ -46,7 +46,7 @@ export async function GET() {
         ...(tomorrowFixturesRes?.response || [])
     ];
 
-    const uniqueLeagueIds = [...new Set(allFixtures.map(f => f.league.id))];
+    const uniqueLeagueIds = Array.from(new Set(allFixtures.map(f => f.league.id)));
     const season = new Date().getFullYear();
     const standingsPromises = uniqueLeagueIds.map(leagueId => 
       fetchRapidAPI("standings", { league: leagueId, season: season })
