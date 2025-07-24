@@ -420,7 +420,9 @@ if (
                 <div className="flex items-center gap-1.5 truncate"><Image src={game.league.logo} alt={game.league.name} width={14} height={14} /> <span className="truncate text-gray-700 text-[11px]">{game.league.name}</span></div>
                 <div className="flex items-center gap-2">
                     <button onClick={onPin} title="Fixar/Desafixar Jogo"><Star className={`w-4 h-4 transition-colors ${isPinned ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} /></button>
-                    <span className="font-bold text-red-500 animate-pulse bg-red-100 px-1.5 py-0.5 rounded-md text-[11px]">{game.fixture.status.elapsed}'</span>
+                    <span className="font-bold text-red-500 animate-pulse bg-red-100 px-1.5 py-0.5 rounded-md text-[11px]"><span className="...">
+                      {game.fixture.status.elapsed}&apos;
+                    </span>
                 </div>
             </div>
             <div className="flex items-center justify-between">
