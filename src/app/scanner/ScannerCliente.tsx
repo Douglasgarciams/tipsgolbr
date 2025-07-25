@@ -324,7 +324,7 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
       stats.homeCorners > (stats.awayCorners + 2) // Pelo menos 3 escanteios a mais
     ) {
       return {
-        type: 'Back Casa (Domínio em Empate)',
+        type: 'Back Casa (Domínio total)',
         text: `Jogo empatado, mas a casa domina completamente as ações ofensivas.`,
         color: 'green'
       };
@@ -400,7 +400,7 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
       awayIPO > homeIPO // ...e o IPO do VISITANTE é maior
     ) {
       return {
-        type: 'Lay Casa (Visitante Perigoso)',
+        type: 'Lay Casa (Visitante vistante jogando pior)',
         text: 'Casa com posse de bola improdutiva. Visitante cria as melhores chances.',
         color: 'red'
       };
