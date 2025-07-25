@@ -318,8 +318,8 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
     if (
       elapsed >= 10 && elapsed <= 60 && // Condição de tempo ajustada
       game.goals.home === game.goals.away && // Condição de placar ajustada para EMPATE
-      homeIPO > (awayIPO * 2.5) && // Pressão IPO da casa é 2.5x maior
-      stats.homeTotalShots > (stats.awayTotalShots * 3) && // Volume de chutes é 3x maior
+      homeIPO > (awayIPO * 1.5) && // Pressão IPO da casa é 2.5x maior
+      stats.homeTotalShots > (stats.awayTotalShots * 2) && // Volume de chutes é 3x maior
       stats.homeShotsOnGoal >= 4 && // Pelo menos 4 chutes no gol
       stats.homeCorners > (stats.awayCorners + 2) // Pelo menos 3 escanteios a mais
     ) {
