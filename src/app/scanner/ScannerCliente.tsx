@@ -330,16 +330,32 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
       };
     }
 
+    // REGRA: Over 0.5 HT (Baseado em Volume Ofensivo de ambos)
     if (
       elapsed < 25 &&
-      stats.homeTotalShots === 3 &&
-      stats.homeShotsOnGoal >= 1 &&
+      stats.homeTotalShots === 4 &&
+      stats.homeShotsOnGoal >= 2 &&
+      stats.awayShotsOnGoal === 2 &&
+      homeDominancePercentage > 55 &&
+      awayDominancePercentage < 45
+    ) {
+      return {
+        type: 'Entrada Over 0.5 HT',
+        text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
+        color: 'green'
+      };
+    }
+    
+    // REGRA: Lay 0x1 FT (Baseado em Volume Ofensivo)
+    if (
+      elapsed < 25 &&
+      stats.homeShotsOnGoal >= 2 &&
       stats.awayShotsOnGoal === 0 &&
       homeDominancePercentage > 65 &&
       awayDominancePercentage < 35
     ) {
       return {
-        type: 'Entrada Over 0.5 HT',
+        type: 'Entrada Lay 0x1 FT - casa com pressão forte',
         text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
         color: 'green'
       };
