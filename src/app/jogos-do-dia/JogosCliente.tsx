@@ -479,6 +479,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
   const [pageData, setPageData] = useState(initialData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFixtureForModal, setSelectedFixtureForModal] = useState<any | null>(null);
+  const [selectedLeague, setSelectedLeague] = useState('all');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -528,6 +529,13 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     2, 3, 4, 13, 11, 31, 39, 40, 41, 42, 43, 45, 47, 48, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 124, 125, 128, 129, 130, 131, 140, 141, 173, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 219, 220, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 345, 347, 78, 473, 474, 501, 503, 527, 558, 559, 633, 638, 497, 519, 555, 557, 592, 593, 548, 657, 722, 727, 807, 810, 4330, 4395, 4888, 4400, 21, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1
   ];
 
+  // --- 2. LÓGICA PARA GERAR A LISTA DE CAMPEONATOS (ACRESCENTADA) ---
+  const uniqueLeagues = useMemo(() => {
+    if (!pageData?.fixtures) return [];
+    const leagues = pageData.fixtures.map((game: any) => game.league);
+    return [...new Map(leagues.map(item => [item['id'], item])).values()];
+  }, [pageData]);
+
   const filteredFixtures = useMemo(() => {
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
     const dateToFilter = activeDate === 'today' ? formatDate(new Date()) : formatDate(new Date(new Date().setDate(new Date().getDate() + 1)));
@@ -535,6 +543,11 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     let fixtures = pageData?.fixtures
         ?.filter((f: any) => ALLOWED_LEAGUE_IDS.includes(f.league.id)) // <-- FILTRO APLICADO
         ?.filter((f: any) => f?.fixture?.date?.startsWith(dateToFilter)) || [];
+
+        // Lógica do filtro de campeonato (ACRESCENTADA)
+    if (selectedLeague !== 'all') {
+        fixtures = fixtures.filter((f: any) => f.league.id.toString() === selectedLeague);
+    }
 
     if (searchQuery.length > 2) {
       const lowerCaseQuery = searchQuery.toLowerCase();
@@ -562,7 +575,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return indexA - indexB;
     });
 
-  }, [pageData, activeDate, searchQuery,]);
+  }, [pageData, activeDate, searchQuery, selectedLeague]);
 
   if (!pageData || !pageData.fixtures) {
     return <div className="text-center text-amber-500">Falha ao carregar dados iniciais.</div>;
@@ -587,6 +600,24 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                         <button onClick={() => setActiveDate('tomorrow')} className={`p-2 rounded-md text-sm font-bold ${activeDate === 'tomorrow' ? 'bg-green-600 text-white' : 'bg-gray-200 text-black'}`}>Amanhã</button>
                     </div>
                 </div>
+
+                {/* Filtro de Campeonato (ACRESCENTADO) */}
+              <div>
+                  <label className="text-sm font-bold text-black">Campeonato</label>
+                  <select 
+                    value={selectedLeague} 
+                    onChange={(e) => setSelectedLeague(e.target.value)}
+                    className="mt-1 w-full bg-gray-50 border border-gray-300 text-black rounded-md p-2 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="all">Todos os Campeonatos</option>
+                    {uniqueLeagues.map((league: any) => (
+                      <option key={league.id} value={league.id}>
+                        {league.name} - {league.country}
+                      </option>
+                    ))}
+                  </select>
+              </div>
+
                 <div>
                     <label className="text-sm font-bold text-black">Buscar</label>
                     <div className="relative mt-1">
