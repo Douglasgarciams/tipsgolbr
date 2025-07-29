@@ -6,6 +6,12 @@ import Image from 'next/image';
 import { LoaderCircle, Search, ChevronDown, BrainCircuit, X } from 'lucide-react';
 import Link from 'next/link';
 import { RadarAnalysisChart } from './RadarChart';
+import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
+
+// ADICIONADO: Filtro de Ligas Permitidas
+  const ALLOWED_LEAGUE_IDS = [
+    2, 3, 4, 13, 11, 31, 39, 40, 41, 42, 43, 45, 47, 48, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 124, 125, 128, 129, 130, 131, 140, 141, 173, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 219, 220, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 345, 347, 78, 473, 474, 501, 503, 527, 558, 559, 633, 638, 497, 519, 555, 557, 592, 593, 548, 657, 722, 727, 807, 810, 4330, 4395, 4888, 4400, 21, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1
+  ];
 // --- Subcomponentes de UI (NÃO ALTERADOS) ---
 const GameRow = ({ fixture }: any) => (
     <div className="flex items-center p-2 bg-gray-200 rounded-md text-sm my-1">
@@ -212,14 +218,16 @@ if (homeScore > awayScore + 2) {
     );
 };
 
+
+
 // --- NOVO SUB-COMPONENTE PARA ORGANIZAR AS ODDS DE MAIS/MENOS ---
 const OverUnderOddsMarket = ({ markets }) => {
   // Lista de mercados que queremos exibir
-  const goalLines = ['1.5', '2.5', '3.5'];
+  const goalLines = ['0.5', '1.5', '2.5', '3.5'];
 
   // Função para encontrar o valor da odd específica (ex: 'Over 1.5')
   const getOddValue = (marketData, value) => {
-    return marketData?.bookmakers[0]?.bets[0]?.values.find(o => o.value === value)?.odd || '-';
+    return marketData?.response?.[0]?.bookmakers?.[0]?.bets?.[0]?.values.find(o => o.value === value)?.odd || '-';
   }
 
   return (
@@ -231,13 +239,15 @@ const OverUnderOddsMarket = ({ markets }) => {
           const marketData = markets?.[`overUnder_${line.replace('.', '_')}`];
           return (
             <React.Fragment key={line}>
-              <div className="bg-gray-200 p-2 rounded-md">
-                <p className="text-xs text-gray-600">Mais de {line}</p>
-                <p className="font-bold text-black">{getOddValue(marketData, `Over ${line}`)}</p>
+              {/* Bloco OVER (com cores verdes) */}
+              <div className="bg-green-100 p-2 rounded-md">
+                <p className="text-xs text-green-800 font-medium">Mais de {line}</p>
+                <p className="font-bold text-green-900">{getOddValue(marketData, `Over ${line}`)}</p>
               </div>
-              <div className="bg-gray-200 p-2 rounded-md">
-                <p className="text-xs text-gray-600">Menos de {line}</p>
-                <p className="font-bold text-black">{getOddValue(marketData, `Under ${line}`)}</p>
+              {/* Bloco UNDER (com cores vermelhas) */}
+              <div className="bg-red-100 p-2 rounded-md">
+                <p className="text-xs text-red-800 font-medium">Menos de {line}</p>
+                <p className="font-bold text-red-900">{getOddValue(marketData, `Under ${line}`)}</p>
               </div>
             </React.Fragment>
           );
@@ -245,6 +255,56 @@ const OverUnderOddsMarket = ({ markets }) => {
       </div>
     </div>
   );
+};
+
+// --- NOVO SUB-COMPONENTE PARA EXIBIR AS ESCALAÇÕES ---
+// --- NOVO SUB-COMPONENTE PARA EXIBIR AS ESCALAÇÕES (ADICIONADO) ---
+const LineupsPanel = ({ lineupData }: { lineupData: any[] }) => {
+    if (!lineupData || lineupData.length < 2) {
+        return <p className="text-gray-500 text-center text-sm py-2">Escalações não disponíveis.</p>;
+    }
+
+    const homeLineup = lineupData[0];
+    const awayLineup = lineupData[1];
+
+    const PlayerList = ({ title, players }: { title: string, players: any[] }) => (
+        <div>
+            <h5 className="font-bold text-sm mb-2 text-gray-800">{title}</h5>
+            <ul className="space-y-1 text-xs">
+                {players.map(p => (
+                    <li key={p.player.id} className="p-1 bg-gray-100 rounded">
+                        <span className="font-semibold text-gray-600 mr-2">{p.player.number}</span>
+                        {p.player.name}
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <div className="flex items-center gap-2 mb-3">
+                    <Image src={homeLineup.team.logo} alt={homeLineup.team.name} width={24} height={24} />
+                    <p className="font-bold text-base text-black">{homeLineup.team.name} ({homeLineup.formation})</p>
+                </div>
+                <div className="space-y-4">
+                    <PlayerList title="Titulares" players={homeLineup.startXI} />
+                    <PlayerList title="Reservas" players={homeLineup.substitutes} />
+                </div>
+            </div>
+            <div>
+                <div className="flex items-center gap-2 mb-3">
+                    <Image src={awayLineup.team.logo} alt={awayLineup.team.name} width={24} height={24} />
+                    <p className="font-bold text-base text-black">{awayLineup.team.name} ({awayLineup.formation})</p>
+                </div>
+                <div className="space-y-4">
+                    <PlayerList title="Titulares" players={awayLineup.startXI} />
+                    <PlayerList title="Reservas" players={awayLineup.substitutes} />
+                </div>
+            </div>
+        </div>
+    );
 };
 
 // --- Painel de Análise ---
@@ -287,9 +347,9 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, isLoading, onOpenM
   return (
     <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-600">
       <div className="flex items-center justify-between mb-4">
-          <div className="text-center w-1/3"><Image src={teams.home.logo} alt={teams.home.name} width={48} height={48} className="mx-auto"/><p className="font-bold mt-1 text-sm">{teams.home.name}</p></div>
+          <div className="text-center w-1/3"><Image src={teams.home.logo} alt={teams.home.name} width={48} height={48} className="mx-auto h-auto"/><p className="font-bold mt-1 text-sm">{teams.home.name}</p></div>
           <div className="text-center">{fixture.status.short === 'NS' ? <p className="text-3xl font-light">vs</p> : <p className="text-3xl font-bold">{goals.home ?? '-'} : {goals.away ?? '-'}</p>}<p className="text-xs text-red-500">{fixture.status.long}</p></div>
-          <div className="text-center w-1/3"><Image src={teams.away.logo} alt={teams.away.name} width={48} height={48} className="mx-auto"/><p className="font-bold mt-1 text-sm">{teams.away.name}</p></div>
+          <div className="text-center w-1/3"><Image src={teams.away.logo} alt={teams.away.name} width={48} height={48} className="mx-auto h-auto"/><p className="font-bold mt-1 text-sm">{teams.away.name}</p></div>
       </div>
       
       {isLoading ? <div className="flex justify-center p-8"><LoaderCircle className="animate-spin"/></div> :
@@ -325,7 +385,9 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, isLoading, onOpenM
                  <li className="mr-2"><button onClick={() => setActiveTab('h2h')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'h2h' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Confroto direto</button></li>
                  <li className="mr-2"><button onClick={() => setActiveTab('form')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'form' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Confrontos</button></li>
                  <li className="mr-2"><button onClick={() => setActiveTab('standings')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'standings' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Classificação</button></li>
+                 <li className="mr-2"><button onClick={() => setActiveTab('lineups')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'lineups' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Escalações</button></li>
                  <li className="mr-2"><button onClick={() => setActiveTab('odds')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'odds' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Odds</button></li>
+                 <li className="mr-2"><button onClick={() => setActiveTab('backtest')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'backtest' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Grafico%</button></li>
              </ul>
          </div>
          <div className="pt-4 min-h-[250px]">
@@ -336,10 +398,18 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, isLoading, onOpenM
             {activeTab === 'h2h' && <div className="space-y-1">{analysisData.h2h.length > 0 ? analysisData.h2h.map((game:any) => <GameRow key={game.fixture.id} fixture={game} />) : <p>Sem confrontos diretos.</p>}</div>}
             {activeTab === 'form' && <div className="space-y-4"><TeamFormAnalysis teamName={teams.home.name} teamId={teams.home.id} teamForm={analysisData.homeTeamForm} /><TeamFormAnalysis teamName={teams.away.name} teamId={teams.away.id} teamForm={analysisData.awayTeamForm} /></div>}
             {activeTab === 'standings' && (pageData.standings && pageData.standings[league.id] ? <table className="w-full text-left text-sm"><thead className="text-xs text-gray-900 uppercase bg-gray-50"><tr><th className="px-2 py-2">#</th><th className="px-2 py-2">Time</th><th className="px-2 py-2">J</th><th className="px-2 py-2">SG</th><th className="px-2 py-2">Pts</th></tr></thead><tbody>{pageData.standings[league.id].map((team:any) => <tr key={team.team.id} className={`border-b ${team.team.id === teams.home.id || team.team.id === teams.away.id ? 'bg-blue-100' : ''}`}><td className="px-2 py-2">{team.rank}</td><td className="px-2 py-2 flex items-center"><Image src={team.team.logo} alt={team.team.name} width={16} height={16} className="mr-2"/>{team.team.name}</td><td className="px-2 py-2">{team.all.played}</td><td className="px-2 py-2">{team.goalsDiff}</td><td className="px-2 py-2 font-bold">{team.points}</td></tr>)}</tbody></table> : <p className="text-gray-500 text-center text-sm py-2">Classificação não disponível.</p>)}
+            {activeTab === 'lineups' && <LineupsPanel lineupData={analysisData.lineup} />}
             {activeTab === 'odds' && (
                 <div className="space-y-4">
                     <OddMarket title="Vencedor da Partida" oddsData={analysisData.odds.matchWinner} />
                     <OddMarket title="Mais/Menos" oddsData={analysisData.odds.overUnder_2_5} />
+                </div>
+            )}
+            {/* 2. CONTEÚDO DA NOVA ABA (ACRESCENTADO) */}
+            {activeTab === 'backtest' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <BacktestAnalysisPanel teamForm={analysisData.homeTeamForm} teamId={teams.home.id} teamName={teams.home.name} />
+                    <BacktestAnalysisPanel teamForm={analysisData.awayTeamForm} teamId={teams.away.id} teamName={teams.away.name} />
                 </div>
             )}
            </div>
@@ -524,10 +594,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     setIsModalOpen(true);
   };
 
-  // ADICIONADO: Filtro de Ligas Permitidas
-  const ALLOWED_LEAGUE_IDS = [
-    2, 3, 4, 13, 11, 31, 39, 40, 41, 42, 43, 45, 47, 48, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 124, 125, 128, 129, 130, 131, 140, 141, 173, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 219, 220, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 345, 347, 78, 473, 474, 501, 503, 527, 558, 559, 633, 638, 497, 519, 555, 557, 592, 593, 548, 657, 722, 727, 807, 810, 4330, 4395, 4888, 4400, 21, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1
-  ];
+  
 
   // --- 2. LÓGICA PARA GERAR A LISTA DE CAMPEONATOS (ACRESCENTADA) ---
   const uniqueLeagues = useMemo(() => {
@@ -537,7 +604,13 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
   }, [pageData]);
 
   const filteredFixtures = useMemo(() => {
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
+    // Esta nova função usa os componentes locais da data, ignorando o fuso horário UTC
+    const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
     const dateToFilter = activeDate === 'today' ? formatDate(new Date()) : formatDate(new Date(new Date().setDate(new Date().getDate() + 1)));
     
     let fixtures = pageData?.fixtures
