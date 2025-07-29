@@ -10,7 +10,10 @@ import {
     BarElement,
     Title,
     Tooltip,
-    Legend
+    Legend,
+    ChartOptions,
+    ChartData,
+    ChartDataset
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 
@@ -125,8 +128,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
     const keys = ['backTeam', 'over0_5_ht', 'over1_5_ft', 'over2_5_ft', 'over3_5_ft', 'over4_5_ft'];
     const labels = ['Back', 'Over 0.5 HT', 'Over 1.5 FT', 'Over 2.5 FT', 'Over 3.5 FT', 'Over 4.5 FT'];
 
-    // Dados para gráfico geral
-    const chartData = {
+    const chartData: ChartData<'bar', number[], string> = {
         labels,
         datasets: [
             {
@@ -151,7 +153,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                 borderWidth: 1,
                 datalabels: {
                     anchor: 'end',
-                    align: 'end',
+                    align: 'end' as const,
                     formatter: (value, context) => {
                         const idx = context.dataIndex;
                         const count = strategyData.counts[keys[idx]];
@@ -160,12 +162,12 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                     color: '#101418ff',
                     font: { weight: 'bold' },
                 },
-            },
+            } as ChartDataset<'bar', number[]>,
         ],
     };
 
-    const chartOptions = {
-        indexAxis: 'y' as const,
+    const chartOptions: ChartOptions<'bar'> = {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -182,9 +184,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
         },
     };
 
-    // Dados para gráfico Casa x Fora (separado)
-    // Ajustando para passar dados corretos para o gráfico com números e %
-    const separatedChartData = {
+    const separatedChartData: ChartData<'bar', number[], string> = {
         labels,
         datasets: [
             {
@@ -195,7 +195,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                 borderWidth: 1,
                 datalabels: {
                     anchor: 'end',
-                    align: 'end',
+                    align: 'end' as const,
                     formatter: (value, context) => {
                         const idx = context.dataIndex;
                         const count = separatedSuccessRates.home.counts[keys[idx]];
@@ -204,7 +204,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                     color: '#080a0cff',
                     font: { weight: 'bold' },
                 },
-            },
+            } as ChartDataset<'bar', number[]>,
             {
                 label: 'Fora',
                 data: keys.map(key => separatedSuccessRates.away.percentages[key]),
@@ -213,7 +213,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                 borderWidth: 1,
                 datalabels: {
                     anchor: 'end',
-                    align: 'end',
+                    align: 'end' as const,
                     formatter: (value, context) => {
                         const idx = context.dataIndex;
                         const count = separatedSuccessRates.away.counts[keys[idx]];
@@ -222,11 +222,11 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
                     color: '#080a0cff',
                     font: { weight: 'bold' },
                 },
-            },
+            } as ChartDataset<'bar', number[]>,
         ],
     };
 
-    const separatedChartOptions = {
+    const separatedChartOptions: ChartOptions<'bar'> = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
