@@ -247,7 +247,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
         <>
             <div className="h-75 relative">
                 <h4 className="font-bold text-center text-gray-800 mb-2 text-sm">
-                    Aproveitamento de Mercados Geral({teamName})
+                    Aproveitamento de Mercados Geral - 10 jogos({teamName})
                 </h4>
                 <Bar options={chartOptions} data={chartData} />
             </div>
@@ -255,7 +255,7 @@ export const BacktestAnalysisPanel = ({ teamForm, teamId, teamName }) => {
             {separatedSuccessRates && (
                 <div className="h-75 relative mt-4">
                     <h4 className="font-bold text-center text-gray-800 mb-0 text-sm">
-                        Casa vs Fora ({teamName})
+                        Casa vs Fora - 5 jogos({teamName})
                     </h4>
                     <Bar options={separatedChartOptions} data={separatedChartData} />
                 </div>

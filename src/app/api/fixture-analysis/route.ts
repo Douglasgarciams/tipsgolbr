@@ -91,6 +91,11 @@ export async function GET(request: Request) {
   const leagueId = searchParams.get('leagueId');
   const season = new Date().getFullYear().toString();
 
+  // --- NOVO RECURSO ---
+  // Lendo o novo parâmetro "last" da URL. O padrão será 10 se não for fornecido.
+  const last = searchParams.get('last') || '10';
+
+
   if (!fixtureId || !homeTeamId || !awayTeamId || !leagueId) {
     return NextResponse.json({ error: "Parâmetros faltando." }, { status: 400 });
   }
@@ -112,9 +117,9 @@ export async function GET(request: Request) {
         fixtureInfoData,
         lineupData
     ] = await Promise.all([
-      fetchRapidAPI('fixtures/headtohead', { h2h: `${homeTeamId}-${awayTeamId}`, last: 5 }),
-      fetchRapidAPI('fixtures', { team: homeTeamId, last: 5, season: season }),
-      fetchRapidAPI('fixtures', { team: awayTeamId, last: 5, season: season }),
+      fetchRapidAPI('fixtures/headtohead', { h2h: `${homeTeamId}-${awayTeamId}`, last: last }),
+      fetchRapidAPI('fixtures', { team: homeTeamId, last: 10, season: season }),
+      fetchRapidAPI('fixtures', { team: awayTeamId, last: 10, season: season }),
       fetchRapidAPI('standings', { league: leagueId, season: season }),
       fetchRapidAPI('fixtures/statistics', { fixture: fixtureId }),
       fetchRapidAPI('odds', { fixture: fixtureId, bet: 1 }),
