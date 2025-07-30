@@ -10,7 +10,7 @@ import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
 
 // ADICIONADO: Filtro de Ligas Permitidas
   const ALLOWED_LEAGUE_IDS = [
-    2, 3, 4, 13, 11, 31, 39, 40, 41, 42, 43, 45, 47, 48, 72, 73, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 124, 125, 128, 129, 130, 131, 136, 140, 141, 173, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 219, 220, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 345, 347, 78, 473, 474, 501, 503, 527, 558, 559, 633, 638, 497, 519, 555, 557, 592, 593, 548, 657, 722, 727, 807, 810, 4330, 4395, 4888, 4400, 21, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1
+    2, 3, 4, 13, 11, 22, 31, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 72, 73, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 124, 125, 128, 129, 130, 131, 136, 140, 141, 173, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 219, 220, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 345, 347, 358, 392, 78, 473, 474, 501, 503, 527, 558, 559, 633, 638, 497, 519, 555, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 807, 810, 4330, 4395, 4888, 4400, 21, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1
   ];
 // --- Subcomponentes de UI (NÃO ALTERADOS) ---
 const GameRow = ({ fixture }: any) => (
@@ -604,51 +604,70 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
   }, [pageData]);
 
   const filteredFixtures = useMemo(() => {
-    // Esta nova função usa os componentes locais da data, ignorando o fuso horário UTC
-    const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    };
-    const dateToFilter = activeDate === 'today' ? formatDate(new Date()) : formatDate(new Date(new Date().setDate(new Date().getDate() + 1)));
-    
-    let fixtures = pageData?.fixtures
-        ?.filter((f: any) => ALLOWED_LEAGUE_IDS.includes(f.league.id)) // <-- FILTRO APLICADO
-        ?.filter((f: any) => f?.fixture?.date?.startsWith(dateToFilter)) || [];
+  // Formata a data no fuso HORÁRIO LOCAL (Brasil, UTC-3)
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-        // Lógica do filtro de campeonato (ACRESCENTADA)
-    if (selectedLeague !== 'all') {
-        fixtures = fixtures.filter((f: any) => f.league.id.toString() === selectedLeague);
-    }
+  // Calcula a data de filtro com base no horário local
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(today.getDate() + 1);
 
-    if (searchQuery.length > 2) {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      fixtures = fixtures.filter((f: any) => 
-        f.teams.home.name.toLowerCase().includes(lowerCaseQuery) ||
-        f.teams.away.name.toLowerCase().includes(lowerCaseQuery) ||
-        f.league.name.toLowerCase().includes(lowerCaseQuery)
-      );
-    }
-    
-    const grouped = fixtures.reduce((acc: any, curr: any) => {
-      if (curr?.league?.name) {
-        const leagueName = curr.league.name;
-        if (!acc[leagueName]) {
-          acc[leagueName] = { games: [], leagueId: curr.league.id };
-        }
-        acc[leagueName].games.push(curr);
+  const dateToFilter =
+    activeDate === 'today'
+      ? formatLocalDate(today)
+      : formatLocalDate(tomorrow);
+
+  // Filtra os jogos permitidos pela liga e pela data local
+  let fixtures =
+    pageData?.fixtures
+      ?.filter((f: any) => ALLOWED_LEAGUE_IDS.includes(f.league.id))
+      ?.filter((f: any) => {
+        // Converte a data do jogo (em UTC) para local antes de formatar
+        const fixtureDateLocal = formatLocalDate(new Date(f.fixture.date));
+        return fixtureDateLocal === dateToFilter;
+      }) || [];
+
+  // Lógica do filtro de campeonato (ACRESCENTADA)
+  if (selectedLeague !== 'all') {
+    fixtures = fixtures.filter((f: any) => f.league.id.toString() === selectedLeague);
+  }
+
+  // Filtro de busca por nome de time ou liga
+  if (searchQuery.length > 2) {
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    fixtures = fixtures.filter((f: any) =>
+      f.teams.home.name.toLowerCase().includes(lowerCaseQuery) ||
+      f.teams.away.name.toLowerCase().includes(lowerCaseQuery) ||
+      f.league.name.toLowerCase().includes(lowerCaseQuery)
+    );
+  }
+
+  // Agrupa por nome da liga
+  const grouped = fixtures.reduce((acc: any, curr: any) => {
+    if (curr?.league?.name) {
+      const leagueName = curr.league.name;
+      if (!acc[leagueName]) {
+        acc[leagueName] = { games: [], leagueId: curr.league.id };
       }
-      return acc;
-    }, {});
+      acc[leagueName].games.push(curr);
+    }
+    return acc;
+  }, {});
 
-    return Object.entries(grouped).sort(([, a]: any, [, b]: any) => {
-        const indexA = ALLOWED_LEAGUE_IDS.indexOf(a.leagueId);
-        const indexB = ALLOWED_LEAGUE_IDS.indexOf(b.leagueId);
-        return indexA - indexB;
-    });
+  // Ordena os grupos pela ordem dos IDs permitidos
+  return Object.entries(grouped).sort(([, a]: any, [, b]: any) => {
+    const indexA = ALLOWED_LEAGUE_IDS.indexOf(a.leagueId);
+    const indexB = ALLOWED_LEAGUE_IDS.indexOf(b.leagueId);
+    return indexA - indexB;
+  });
 
-  }, [pageData, activeDate, searchQuery, selectedLeague]);
+}, [pageData, activeDate, searchQuery, selectedLeague]);
+
 
   if (!pageData || !pageData.fixtures) {
     return <div className="text-center text-amber-500">Falha ao carregar dados iniciais.</div>;
