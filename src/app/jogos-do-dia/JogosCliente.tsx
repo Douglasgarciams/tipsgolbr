@@ -3,7 +3,7 @@
 import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { LoaderCircle, Search, ChevronDown, BrainCircuit, X, CornerUpLeft, Shield, Square } from 'lucide-react'; 
+import { LoaderCircle, Search, ChevronDown, BrainCircuit, X, CornerUpLeft, Shield, Square, ExternalLink } from 'lucide-react'; 
 import Link from 'next/link';
 import { RadarAnalysisChart } from './RadarChart';
 import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
@@ -65,36 +65,41 @@ const CollapsibleGameRow = ({ fixture }: any) => {
 
             {isExpanded && (
                 <div className="mt-3 pt-3 border-t border-gray-200 text-xs animate-fade-in">
-                    <div className="text-center text-gray-500 mb-2">1º Tempo: {halftimeScore}</div>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                    <div className="text-center text-black-600 mb-3">1º Tempo: {halftimeScore}</div>
+                    
+                    {/* ▼▼▼ ALTERAÇÃO PRINCIPAL AQUI ▼▼▼ */}
+                    {/* A classe 'grid grid-cols-2' foi trocada por 'space-y-2' para criar uma lista vertical */}
+                    <div className="space-y-2">
+                    {/* ▲▲▲ FIM DA ALTERAÇÃO ▲▲▲ */}
+
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Shots on Goal')}</span>
-                            <span className="text-gray-500">Chutes no Gol</span>
+                            <span className="text-green-600">Chutes no Gol</span>
                             <span>{getStat(awayId, 'Shots on Goal')}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Total Shots')}</span>
-                            <span className="text-gray-500">Total de Chutes</span>
+                            <span className="text-green-600">Total de Chutes</span>
                             <span>{getStat(awayId, 'Total Shots')}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Corner Kicks')}</span>
-                            <span className="text-gray-500 flex items-center gap-1"><CornerUpLeft size={14}/> Escanteios</span>
+                            <span className="text-green-600 flex items-center gap-1"><CornerUpLeft size={14}/> Escanteios</span>
                             <span>{getStat(awayId, 'Corner Kicks')}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Fouls')}</span>
-                            <span className="text-gray-500 flex items-center gap-1"><Shield size={14}/> Faltas</span>
+                            <span className="text-green-600 flex items-center gap-1"><Shield size={14}/> Faltas</span>
                             <span>{getStat(awayId, 'Fouls')}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Yellow Cards')}</span>
-                            <span className="text-gray-500 flex items-center gap-1"><Square size={14} className="text-yellow-500 fill-current"/> Cartões Amarelos</span>
+                            <span className="text-green-600 flex items-center gap-1"><Square size={14} className="text-yellow-500 fill-current"/> Cartões Amarelos</span>
                             <span>{getStat(awayId, 'Yellow Cards')}</span>
                         </div>
                         <div className="flex justify-between items-center">
                             <span>{getStat(homeId, 'Red Cards')}</span>
-                            <span className="text-gray-500 flex items-center gap-1"><Square size={14} className="text-red-600 fill-current"/> Cartões Vermelhos</span>
+                            <span className="text-green-600 flex items-center gap-1"><Square size={14} className="text-red-600 fill-current"/> Cartões Vermelhos</span>
                             <span>{getStat(awayId, 'Red Cards')}</span>
                         </div>
                     </div>
@@ -441,6 +446,10 @@ const GameHeader = ({ fixtureData, analysisData }: any) => {
     const fullTimeScore = `${goals.home ?? ''} - ${goals.away ?? ''}`;
     const halfTimeScore = `(1T: ${score.halftime.home ?? '?'} - ${score.halftime.away ?? '?'})`;
 
+    // A lógica de busca foi removida e substituída por um link estático e direto.
+    const fullTBetURL = "https://fulltbet.bet.br/b/exchange";
+    // --- FIM DA ALTERAÇÃO ---
+
     return (
         <div className="mb-4">
             <div className="grid grid-cols-3 items-center text-center">
@@ -484,6 +493,19 @@ const GameHeader = ({ fixtureData, analysisData }: any) => {
                     <p className="font-bold text-black text-sm">{awayOdd}</p>
                 </div>
             </div>
+            {/* --- NOVO: Botão para buscar o jogo no site de apostas --- */}
+            <div className="mt-4">
+                <a 
+                    href={fullTBetURL} 
+                    target="_blank" // Abre em uma nova aba
+                    rel="noopener noreferrer" // Medida de segurança para links em nova aba
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-sm"
+                >
+                    <ExternalLink size={16} />
+                    Procurar Jogo na FullTBet
+                </a>
+            </div>
+            {/* --- FIM DO NOVO BOTÃO --- */}
         </div>
     );
 };
@@ -538,7 +560,7 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
                 )}
                 
                 {/* CÓDIGO RESTAURADO: Botão da Análise IA */}
-                <button onClick={onOpenModal} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors mb-4">
+                <button onClick={onOpenModal} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors mb-4">
                     <BrainCircuit size={20} /> Ver Análise da IA
                 </button>
 
