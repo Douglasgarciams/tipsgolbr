@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { Clock, Flag, Star, Search, ChevronLeft, ChevronRight, BrainCircuit, ShieldCheck, Zap, Target, Shield, AlertCircle, Gauge, ArrowLeftRight, Home } from 'lucide-react';
+import { Clock, Flag, Star, Search, ChevronLeft, ChevronRight, BrainCircuit, ShieldCheck, Zap, Target, Shield, AlertCircle, Gauge, ArrowLeftRight, Home, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { DominanceBar } from './DominanceBar';
 import { GameTimelineChart } from './GameTimelineChart';
@@ -562,12 +562,18 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
         );
     }
 
-    return (
+     return (
         <div className="space-y-6">
-          <div className="flex justify-start">
+          <div className="flex justify-start gap-4">
             <Link href="/">
                 <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
                     <Home size={18} /> Ir para a Página Principal
+                </button>
+            </Link>
+
+            <Link href="/jogos-do-dia">
+                <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
+                    <BookOpen size={18} /> Análise de jogos
                 </button>
             </Link>
         </div>

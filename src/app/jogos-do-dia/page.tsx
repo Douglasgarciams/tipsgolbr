@@ -38,7 +38,7 @@ export default async function JogosDoDiaPage() {
   return (
     <div className="min-h-screen bg-blue-600 text-gray-800 font-sans p-4 md:p-6">
       <div className="max-w-screen-2xl mx-auto">
-         <h1 className="text-3xl font-bold text-white text-center text-900 mb-6">Jogos do Dia: Análise Pré-Live</h1>
+         <h1 className="font-mono text-3xl font-bold text-white text-center text-900 mb-6">Jogos do Dia: Análise Pré-Live</h1>
          <JogosCliente initialData={initialData} />
       </div>
     </div>
