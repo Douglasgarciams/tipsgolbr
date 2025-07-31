@@ -3,9 +3,8 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
+        protocol: 'https', // <-- A VÍRGULA QUE FALTAVA FOI ADICIONADA AQUI
         hostname: 'media.api-sports.io',
-        port: '',
         pathname: '/football/**',
       },
     ],

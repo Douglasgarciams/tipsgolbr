@@ -417,6 +417,77 @@ const RecentGamesStatsPanel = ({ homeTeamForm, awayTeamForm, homeId, awayId }: a
     );
 };
 
+// ARQUIVO: src/app/jogos-do-dia/JogosCliente.tsx
+
+// ... (outros componentes)
+
+// NOVO COMPONENTE PARA O CABEÇALHO DO JOGO
+const GameHeader = ({ fixtureData, analysisData }: any) => {
+    const { fixture, teams, goals, score } = fixtureData;
+
+    // 1. Extrai as odds de "Vencedor da Partida" (Match Odds)
+    const oddsValues = analysisData?.odds?.matchWinner?.bookmakers[0]?.bets[0]?.values;
+    const homeOdd = oddsValues?.find((o: any) => o.value === 'Home')?.odd || '-';
+    const drawOdd = oddsValues?.find((o: any) => o.value === 'Draw')?.odd || '-';
+    const awayOdd = oddsValues?.find((o: any) => o.value === 'Away')?.odd || '-';
+
+    // 2. Formata a data e a hora do jogo
+    const gameDate = new Date(fixture.date);
+    const formattedDate = gameDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const formattedTime = gameDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    // 3. Define os placares (final e 1º tempo)
+    const isNotStarted = fixture.status.short === 'NS';
+    const fullTimeScore = `${goals.home ?? ''} - ${goals.away ?? ''}`;
+    const halfTimeScore = `(1T: ${score.halftime.home ?? '?'} - ${score.halftime.away ?? '?'})`;
+
+    return (
+        <div className="mb-4">
+            <div className="grid grid-cols-3 items-center text-center">
+                {/* Time da Casa */}
+                <div className="flex flex-col items-center">
+                    <Image src={teams.home.logo} alt={teams.home.name} width={56} height={56} className="h-14 w-14 object-contain" />
+                    <h3 className="font-bold text-black mt-2 text-base">{teams.home.name}</h3>
+                </div>
+
+                {/* Informações Centrais (Placar, Data, Hora) */}
+                <div className="px-2">
+                    {isNotStarted ? (
+                        <div className="text-2xl font-bold text-gray-700">{formattedTime}</div>
+                    ) : (
+                        <div className="text-4xl font-bold text-black">{fullTimeScore}</div>
+                    )}
+                    <p className="text-xs text-green-600 mt-1">
+                        {isNotStarted ? formattedDate : `${fixture.status.long} ${halfTimeScore}`}
+                    </p>
+                </div>
+
+                {/* Time Visitante */}
+                <div className="flex flex-col items-center">
+                    <Image src={teams.away.logo} alt={teams.away.name} width={56} height={56} className="h-14 w-14 object-contain" />
+                    <h3 className="font-bold text-black mt-2 text-base">{teams.away.name}</h3>
+                </div>
+            </div>
+
+            {/* Seção de Odds */}
+            <div className="grid grid-cols-3 gap-2 mt-4 text-center bg-blue-200 p-2 rounded-lg">
+                <div>
+                    <p className="text-xs text-green-700">Casa</p>
+                    <p className="font-bold text-black text-sm">{homeOdd}</p>
+                </div>
+                <div>
+                    <p className="text-xs text-gray-900">Empate</p>
+                    <p className="font-bold text-black text-sm">{drawOdd}</p>
+                </div>
+                <div>
+                    <p className="text-xs text-red-500">Fora</p>
+                    <p className="font-bold text-black text-sm">{awayOdd}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any) => {
     const [activeTab, setActiveTab] = useState('radar');
     const { fixture, teams, league, goals } = fixtureData;
@@ -443,12 +514,8 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
     }, [analysisData, teams]);
 
     return (
-        <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-600">
-            <div className="flex items-center justify-between mb-4">
-                <div className="text-center w-1/3"><Image src={teams.home.logo} alt={teams.home.name} width={48} height={48} className="mx-auto h-auto" /><p className="font-bold mt-1 text-sm">{teams.home.name}</p></div>
-                <div className="text-center">{fixture.status.short === 'NS' ? <p className="text-3xl font-light">vs</p> : <p className="text-3xl font-bold">{goals.home ?? '-'} : {goals.away ?? '-'}</p>}<p className="text-xs text-red-500">{fixture.status.long}</p></div>
-                <div className="text-center w-1/3"><Image src={teams.away.logo} alt={teams.away.name} width={48} height={48} className="mx-auto h-auto" /><p className="font-bold mt-1 text-sm">{teams.away.name}</p></div>
-            </div>
+        <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-500">
+            <GameHeader fixtureData={fixtureData} analysisData={analysisData} />
 
             <>
                 {goalAverages && (
