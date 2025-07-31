@@ -26,7 +26,7 @@ export default async function HomePage() {
             href="/meus-resultados"
             className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Ver Meus Resultados
+            Meus Resultados
           </Link>
           {/* NOVO: Botão para Aulas */}
           <Link
@@ -40,7 +40,7 @@ export default async function HomePage() {
             href="/calculadora"
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Calculadora Back/Lay
+            Calculadora
             </Link>
 
             {/* NOVO: Botão para grafico de resultados*/}
@@ -48,14 +48,14 @@ export default async function HomePage() {
             href="/analise-resultados"
             className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Análise Gráfica
+            Grafico
             </Link>
             {/* 👇 BOTÃO ADICIONADO 👇 */}
           <Link
             href="/jogos-do-dia"
             className="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Estudo Pré-Live
+            Análise Jogos
             </Link>
 
             {/* 👇 BOTÃO ADICIONADO 👇 */}
@@ -63,7 +63,7 @@ export default async function HomePage() {
             href="/scanner"
             className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Scanner Ao Vivo
+            Scanner
         </Link>
         </div>
 
