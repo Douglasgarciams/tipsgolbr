@@ -38,10 +38,10 @@ export default async function JogosDoDiaPage() {
 
   return (
     // ALTERADO: Adicionado 'h-screen' e 'flex flex-col' para controlar a altura
-    <main className="h-screen max-h-screen flex flex-col bg-slate-100 text-gray-800 font-sans p-4 md:p-6 overflow-hidden">
-      <div className="max-w-screen-2xl mx-auto w-full flex flex-col flex-1 min-h-0">
+    <main className="h-screen max-h-screen flex flex-col bg-slate-100 text-gray-800 font-sans p-4 md:p-2 overflow-hidden">
+      <div className="w-full flex flex-col flex-1 min-h-0">
         
-        <header className="flex items-center justify-between mb-6 flex-shrink-0">
+        <header className="flex items-center justify-between mb-3 flex-shrink-0">
             <div className="w-40">
                 <Image
                   src="/images/logosemfundo.jpg"
