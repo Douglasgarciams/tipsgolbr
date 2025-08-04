@@ -56,63 +56,73 @@ export default function AulasPage() {
     },
   ];
 
+  // O componente AulaCard foi internalizado para não criar novos arquivos.
+  const AulaCard = ({ titulo, video }) => (
+    <div className="group bg-slate-800/50 rounded-xl overflow-hidden border border-slate-700 transition-all duration-300 ease-in-out hover:scale-105 hover:border-indigo-500/50 hover:shadow-2xl hover:shadow-indigo-500/10">
+      <div className="aspect-video"> {/* Classe moderna para aspect ratio */}
+        <iframe
+          src={video}
+          title={titulo}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+        ></iframe>
+      </div>
+      <div className="p-5">
+        <h3 className="text-lg font-semibold text-slate-200 group-hover:text-indigo-400 transition-colors duration-300">
+          {titulo}
+        </h3>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-emerald-900 text-white px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Cabeçalho */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <h1 className="text-3xl font-bold">Nossas Aulas</h1>
+    // Fundo mais sóbrio e moderno com mais espaçamento vertical
+    <div className="min-h-screen bg-slate-900 text-white px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+      <div className="max-w-7xl mx-auto">
+        {/* Cabeçalho com tipografia e espaçamento aprimorados */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-16 gap-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-100">
+              Nossas Aulas
+            </h1>
+            <p className="mt-3 text-lg text-slate-400 max-w-2xl">
+              Aprenda os melhores métodos e estratégias para suas apostas.
+            </p>
+          </div>
           <Link
             href="/"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 shrink-0"
           >
             Voltar para Palpites
           </Link>
-        </div>
+        </header>
 
-        <p className="text-gray-300 mb-5">Aprenda os melhores métodos e estratégias para suas apostas.</p>
-        <p className="text-gray-300 mb-10">AULAS PARA INICIANTES.</p>
+        {/* Seção de Aulas Iniciais */}
+        <section className="mb-20">
+          <h2 className="text-3xl font-bold text-slate-200 border-l-4 border-indigo-500 pl-4 mb-10">
+            Aulas para Iniciantes
+          </h2>
+          {/* Grid mais responsivo que se adapta a telas maiores (até 3 colunas) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {aulasIniciais.map((aula, index) => (
+              <AulaCard key={index} titulo={aula.titulo} video={aula.video} />
+            ))}
+          </div>
+        </section>
 
-        {/* Aulas Iniciais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-          {aulasIniciais.map((aula, index) => (
-            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">{aula.titulo}</h2>
-              <div className="aspect-w-16 aspect-h-9">
-                <iframe
-                  src={aula.video}
-                  title={aula.titulo}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-64 sm:h-52 rounded-md"
-                ></iframe>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Separador */}
-        <h3 className="text-xl font-bold text-gray-200 mb-6">AULAS DOS MÉTODOS.</h3>
-
-        {/* Aulas dos Métodos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {aulasMetodos.map((aula, index) => (
-            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">{aula.titulo}</h2>
-              <div className="aspect-w-16 aspect-h-9">
-                <iframe
-                  src={aula.video}
-                  title={aula.titulo}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-64 sm:h-52 rounded-md"
-                ></iframe>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Seção de Aulas dos Métodos */}
+        <section>
+          <h2 className="text-3xl font-bold text-slate-200 border-l-4 border-indigo-500 pl-4 mb-10">
+            Aulas dos Métodos
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {aulasMetodos.map((aula, index) => (
+              <AulaCard key={index} titulo={aula.titulo} video={aula.video} />
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );
