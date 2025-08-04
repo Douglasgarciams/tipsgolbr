@@ -7,9 +7,6 @@ import Link from 'next/link';
 import { RadarAnalysisChart } from './RadarChart';
 import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
 
-// Definição de tipo para os grupos de jogos para ajudar o TypeScript
-type GameGroup = [string, { games: any[] }];
-
 
 // Filtro de Ligas Permitidas
 const ALLOWED_LEAGUE_IDS = [
