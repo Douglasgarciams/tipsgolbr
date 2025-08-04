@@ -7,10 +7,8 @@ import Link from 'next/link';
 import { RadarAnalysisChart } from './RadarChart';
 import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
 
-// ============================================================================
-// VERSÃO CORRIGIDA PARA ERRO 429 NAS IMAGENS
-// Adicionada a prop 'unoptimized' em todos os <Image> que carregam logos.
-// ============================================================================
+// Definição de tipo para os grupos de jogos para ajudar o TypeScript
+type GameGroup = [string, { games: any[] }];
 
 
 // Filtro de Ligas Permitidas
@@ -578,10 +576,24 @@ const ColunaJogos = ({
     );
 };
 
-const ColunaAnalise = ({ selectedFixtureId, allFixtures, analysisCache, loadingFixtureId, pageData, onOpenModal }: any) => {
+const ColunaAnalise = ({ selectedFixtureId, allFixtures, analysisCache, loadingFixtureId, pageData, onOpenModal, onGoBack }: any) => {
+    // Adicionamos o botão de Voltar que só aparece em telas pequenas (lg:hidden)
+    const BackButton = () => (
+        <div className="p-4 lg:hidden">
+            <button 
+                onClick={onGoBack} 
+                className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800"
+            >
+                <CornerUpLeft size={16} />
+                Voltar para a lista de jogos
+            </button>
+        </div>
+    );
+
     if (!selectedFixtureId) {
+        // No desktop, mostra o painel para selecionar um jogo
         return (
-            <div className="bg-white rounded-lg shadow-md h-full flex items-center justify-center text-center p-4 sticky top-6">
+            <div className="hidden lg:flex bg-white rounded-lg shadow-md h-full items-center justify-center text-center p-4 sticky top-6">
                 <div>
                     <BrainCircuit size={48} className="mx-auto text-gray-300" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">Selecione um Jogo</h3>
@@ -590,12 +602,16 @@ const ColunaAnalise = ({ selectedFixtureId, allFixtures, analysisCache, loadingF
             </div>
         );
     }
+    
     const fixtureData = allFixtures.find((f: any) => f.fixture.id === selectedFixtureId);
     const isLoading = loadingFixtureId === selectedFixtureId;
     const currentAnalysisData = analysisCache[selectedFixtureId];
+
     if (!fixtureData) return null;
+
     return (
         <div className="bg-white rounded-lg shadow-md sticky top-6 h-full overflow-y-auto">
+            <BackButton />
             {isLoading ? (
                 <AnalysisPanelSkeleton fixtureData={fixtureData} />
             ) : currentAnalysisData && !currentAnalysisData.error ? (
@@ -632,6 +648,8 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     const [selectedFixtureForModal, setSelectedFixtureForModal] = useState<any | null>(null);
     const [pinnedGameIds, setPinnedGameIds] = useState<number[]>([]);
     const [statusFilter, setStatusFilter] = useState<'all' | 'not_started' | 'in_progress' | 'finished'>('all');
+    // NOVO ESTADO: Controla a visão no celular
+    const [mobileView, setMobileView] = useState<'list' | 'analysis'>('list');
 
     useEffect(() => {
         const savedPins = localStorage.getItem('pinnedGameIds');
@@ -808,7 +826,14 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         if (gameData) {
             setSelectedFixtureId(fixtureId);
             fetchAnalysis(gameData);
+            setMobileView('analysis'); // Muda para a tela de análise no celular
         }
+    };
+
+    // NOVA FUNÇÃO: Para o botão "Voltar" no celular
+    const handleGoBackToList = () => {
+        setMobileView('list');
+        setSelectedFixtureId(null); // Limpa a seleção para o desktop se a tela for redimensionada
     };
 
     const handleOpenAnalysisModal = (gameData: any) => {
@@ -822,7 +847,8 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                 <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>
             ) : (
                 <>
-                    <div className="flex flex-col lg:grid lg:grid-cols-[260px_1fr_3fr] gap-2 lg:gap-1 h-full">
+                    {/* LAYOUT PARA DESKTOP (some em telas pequenas) */}
+                    <div className="hidden lg:grid lg:grid-cols-[260px_1fr_3fr] gap-2 h-full">
                         <ColunaFiltros
                             activeDate={activeDate}
                             setActiveDate={setActiveDate}
@@ -853,7 +879,49 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                             loadingFixtureId={loadingFixtureId}
                             pageData={pageData}
                             onOpenModal={handleOpenAnalysisModal}
+                            // A função onGoBack não é necessária aqui, pois o botão estará escondido
                         />
+                    </div>
+
+                    {/* LAYOUT PARA CELULAR (some em telas grandes) */}
+                    <div className="lg:hidden h-full">
+                        {mobileView === 'list' ? (
+                            // Tela da Lista de Jogos
+                            <div className="flex flex-col h-full gap-4 p-2">
+                                <ColunaFiltros
+                                    activeDate={activeDate}
+                                    setActiveDate={setActiveDate}
+                                    selectedLeague={selectedLeague}
+                                    setSelectedLeague={setSelectedLeague}
+                                    searchQuery={searchQuery}
+                                    setSearchQuery={setSearchQuery}
+                                    uniqueLeagues={uniqueLeagues}
+                                    groupBy={groupBy}
+                                    setGroupBy={setGroupBy}
+                                />
+                                <ColunaJogos
+                                    groupedFixtures={groupedFixtures}
+                                    selectedFixtureId={selectedFixtureId}
+                                    onSelectFixture={handleSelectFixture}
+                                    pinnedGameIds={pinnedGameIds}
+                                    onPinGame={handlePinGame}
+                                    gameCounts={gameCounts}
+                                    statusFilter={statusFilter}
+                                    onStatusFilterChange={setStatusFilter}
+                                />
+                            </div>
+                        ) : (
+                            // Tela da Análise do Jogo
+                            <ColunaAnalise
+                                selectedFixtureId={selectedFixtureId}
+                                allFixtures={allFixtures}
+                                analysisCache={analysisCache}
+                                loadingFixtureId={loadingFixtureId}
+                                pageData={pageData}
+                                onOpenModal={handleOpenAnalysisModal}
+                                onGoBack={handleGoBackToList} // Passa a função para o botão "Voltar"
+                            />
+                        )}
                     </div>
 
                     {isModalOpen && selectedFixtureForModal && analysisCache[selectedFixtureForModal.fixture.id] && (
