@@ -473,8 +473,8 @@ const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
     ];
 
     return (
-        <div className="flex-shrink-0 p-2">
-            <div className="grid grid-cols-2 gap-0 p-0 bg-white rounded-lg shadow-md">
+        <div className="flex-shrink-0 p-1">
+            <div className="grid grid-cols-2 gap-2 p-0 bg-white rounded-lg shadow-md">
                 {filters.map(filter => (
                     <button
                         key={filter.key}
@@ -822,7 +822,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                 <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>
             ) : (
                 <>
-                    <div className="grid grid-cols-[280px_1fr_3fr] gap-6 h-full">
+                    <div className="grid grid-cols-[250px_1fr_3fr] gap-3 h-full">
                         <ColunaFiltros
                             activeDate={activeDate}
                             setActiveDate={setActiveDate}
