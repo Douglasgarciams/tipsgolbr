@@ -509,11 +509,11 @@ const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin }: any) 
             <span className="w-14 text-xs text-gray-700 font-semibold">{new Date(fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             <div className="flex-1 flex flex-col min-w-0 px-2">
                 <div className="flex items-center gap-2">
-                    <Image src={teams.home.logo} alt={teams.home.name} width={16} height={16} unoptimized />
+                    
                     <span className="text-sm text-black truncate">{teams.home.name}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                    <Image src={teams.away.logo} alt={teams.away.name} width={16} height={16} unoptimized />
+                    
                     <span className="text-sm text-black truncate">{teams.away.name}</span>
                 </div>
             </div>
@@ -822,7 +822,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                 <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>
             ) : (
                 <>
-                    <div className="grid grid-cols-[250px_1fr_3fr] gap-3 h-full">
+                    <div className="flex flex-col lg:grid lg:grid-cols-[260px_1fr_3fr] gap-2 lg:gap-1 h-full">
                         <ColunaFiltros
                             activeDate={activeDate}
                             setActiveDate={setActiveDate}
