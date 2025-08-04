@@ -15,7 +15,7 @@ import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
 
 // Filtro de Ligas Permitidas
 const ALLOWED_LEAGUE_IDS = [
-    2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 121, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 334, 345, 346, 347, 358, 392, 78, 473, 474, 501, 503, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
+    2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 121, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 255, 256, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 328, 329, 334, 345, 346, 347, 358, 392, 489, 78, 473, 474, 501, 503, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 772, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
 ];
 
 // ============================================================================
@@ -454,6 +454,7 @@ const ColunaFiltros = ({ activeDate, setActiveDate, selectedLeague, setSelectedL
     );
 };
 
+// ### MUDANÇA 1: NOVO COMPONENTE PARA OS BOTÕES DE FILTRO ###
 const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
     const filters = [
         { key: 'all', label: 'Todos' },
@@ -464,15 +465,15 @@ const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
 
     return (
         <div className="flex-shrink-0 p-2">
-            <div className="grid grid-cols-2 gap-2 p-2 bg-white rounded-lg shadow-md">
+            <div className="grid grid-cols-2 gap-0 p-0 bg-white rounded-lg shadow-md">
                 {filters.map(filter => (
                     <button
                         key={filter.key}
                         onClick={() => onFilterChange(filter.key)}
-                        className={`flex-1 text-center text-sm font-semibold p-2 rounded-md transition-colors ${
+                        className={`flex-1 text-center text-sm font-semibold p-1 rounded-md transition-colors whitespace-nowrap ${
                             activeFilter === filter.key
                                 ? 'bg-blue-600 text-white shadow'
-                                : 'text-gray-600 hover:bg-gray-100'
+                                : 'text-blue-800 hover:bg-blue-300'
                         }`}
                     >
                         {filter.label} ({counts[filter.key] || 0})
@@ -515,24 +516,29 @@ const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin }: any) 
     );
 };
 
+// ### MUDANÇA 2: COLUNAJOGOS AGORA INCLUI OS FILTROS ###
 const ColunaJogos = ({ 
     groupedFixtures, 
     selectedFixtureId, 
     onSelectFixture, 
     pinnedGameIds, 
     onPinGame,
+    // Novas props para os filtros
     gameCounts,
     statusFilter,
     onStatusFilterChange
 }: any) => {
     return (
+        // A rolagem é controlada por este container
         <div className="space-y-3 h-full overflow-y-auto bg-gray-50 p-2 rounded-lg">
+            {/* Botões de filtro renderizados aqui dentro */}
             <GameStatusFilters
                 counts={gameCounts}
                 activeFilter={statusFilter}
                 onFilterChange={onStatusFilterChange}
             />
 
+            {/* Conteúdo original da coluna */}
             {groupedFixtures.length > 0 ? (
                 groupedFixtures.map(([groupName, groupData]: [string, any]) => (
                     <div key={groupName} className="bg-white rounded-lg shadow-md">
@@ -793,7 +799,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     
     const allFixtures = useMemo(() => groupedFixtures.flatMap(group => group[1].games), [groupedFixtures]);
     
-    // CORREÇÃO DO HOOK: A verificação agora é feita aqui
+    // ## AQUI ESTÁ A CORREÇÃO PARA O ERRO DE BUILD ##
     return (
         <>
             {(!pageData || !pageData.fixtures) ? (
