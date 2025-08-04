@@ -798,58 +798,58 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return processedGroups;
     }, [baseFilteredGames, statusFilter, groupBy, pinnedGameIds]);
     
-    const allFixtures = useMemo(() => groupedFixtures.flatMap(group => group[1].games), [groupedFixtures]);
+   const allFixtures = useMemo(() => groupedFixtures.flatMap(group => group[1].games), [groupedFixtures]);
     
-    if (!pageData || !pageData.fixtures) {
-        return <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>;
-    }
-
+    // CORREÇÃO DO HOOK: A verificação agora é feita aqui
     return (
         <>
-            {/* O layout do grid permanece o mesmo que você forneceu */}
-            <div className="grid grid-cols-[250px_1fr_3fr] gap-1 h-full">
-                <ColunaFiltros
-                    activeDate={activeDate}
-                    setActiveDate={setActiveDate}
-                    selectedLeague={selectedLeague}
-                    setSelectedLeague={setSelectedLeague}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    uniqueLeagues={uniqueLeagues}
-                    groupBy={groupBy}
-                    setGroupBy={setGroupBy}
-                />
-                
-                {/* ### MUDANÇA 5: PASSANDO AS NOVAS PROPS PARA COLUNAJOGOS ### */}
-                <ColunaJogos
-                    groupedFixtures={groupedFixtures}
-                    selectedFixtureId={selectedFixtureId}
-                    onSelectFixture={handleSelectFixture}
-                    pinnedGameIds={pinnedGameIds}
-                    onPinGame={handlePinGame}
-                    // Passando as props dos filtros
-                    gameCounts={gameCounts}
-                    statusFilter={statusFilter}
-                    onStatusFilterChange={setStatusFilter}
-                />
+            {(!pageData || !pageData.fixtures) ? (
+                <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>
+            ) : (
+                <>
+                    <div className="grid grid-cols-[280px_1fr_3fr] gap-6 h-full">
+                        <ColunaFiltros
+                            activeDate={activeDate}
+                            setActiveDate={setActiveDate}
+                            selectedLeague={selectedLeague}
+                            setSelectedLeague={setSelectedLeague}
+                            searchQuery={searchQuery}
+                            setSearchQuery={setSearchQuery}
+                            uniqueLeagues={uniqueLeagues}
+                            groupBy={groupBy}
+                            setGroupBy={setGroupBy}
+                        />
+                        
+                        <ColunaJogos
+                            groupedFixtures={groupedFixtures}
+                            selectedFixtureId={selectedFixtureId}
+                            onSelectFixture={handleSelectFixture}
+                            pinnedGameIds={pinnedGameIds}
+                            onPinGame={handlePinGame}
+                            gameCounts={gameCounts}
+                            statusFilter={statusFilter}
+                            onStatusFilterChange={setStatusFilter}
+                        />
 
-                <ColunaAnalise
-                    selectedFixtureId={selectedFixtureId}
-                    allFixtures={allFixtures}
-                    analysisCache={analysisCache}
-                    loadingFixtureId={loadingFixtureId}
-                    pageData={pageData}
-                    onOpenModal={handleOpenAnalysisModal}
-                />
-            </div>
+                        <ColunaAnalise
+                            selectedFixtureId={selectedFixtureId}
+                            allFixtures={allFixtures}
+                            analysisCache={analysisCache}
+                            loadingFixtureId={loadingFixtureId}
+                            pageData={pageData}
+                            onOpenModal={handleOpenAnalysisModal}
+                        />
+                    </div>
 
-            {isModalOpen && selectedFixtureForModal && analysisCache[selectedFixtureForModal.fixture.id] && (
-                <AiAnalysisModal
-                    fixtureData={selectedFixtureForModal}
-                    analysisData={analysisCache[selectedFixtureForModal.fixture.id]}
-                    pageData={pageData}
-                    onClose={() => setIsModalOpen(false)}
-                />
+                    {isModalOpen && selectedFixtureForModal && analysisCache[selectedFixtureForModal.fixture.id] && (
+                        <AiAnalysisModal
+                            fixtureData={selectedFixtureForModal}
+                            analysisData={analysisCache[selectedFixtureForModal.fixture.id]}
+                            pageData={pageData}
+                            onClose={() => setIsModalOpen(false)}
+                        />
+                    )}
+                </>
             )}
         </>
     );
