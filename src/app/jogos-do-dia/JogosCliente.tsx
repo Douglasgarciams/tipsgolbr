@@ -77,14 +77,15 @@ const CollapsibleGameRow = ({ fixture }: any) => {
 };
 
 const TeamFormAnalysis = ({ teamName, teamId, teamForm, venueFilter }: { teamName: string, teamId: number, teamForm: any[], venueFilter?: 'Home' | 'Away' }) => {
-    if (!teamForm || teamForm.length === 0) {
-        return <p className="text-gray-500 text-center text-sm py-2">Dados de forma não disponíveis.</p>;
-    }
-
     const filteredGames = useMemo(() => {
+        if (!teamForm || teamForm.length === 0) {
+            return [];
+        }
+
         if (!venueFilter) {
             return teamForm;
         }
+
         return teamForm.filter(game => {
             if (venueFilter === 'Home') {
                 return game.teams.home.id === teamId;
@@ -92,6 +93,10 @@ const TeamFormAnalysis = ({ teamName, teamId, teamForm, venueFilter }: { teamNam
             return game.teams.away.id === teamId;
         });
     }, [teamForm, teamId, venueFilter]);
+
+    if (!teamForm || teamForm.length === 0) {
+        return <p className="text-gray-500 text-center text-sm py-2">Dados de forma não disponíveis.</p>;
+    }
 
     if (filteredGames.length === 0) {
         return (
@@ -101,7 +106,7 @@ const TeamFormAnalysis = ({ teamName, teamId, teamForm, venueFilter }: { teamNam
             </div>
         );
     }
-
+    
     const formResults = filteredGames.map(game => {
         const isHome = game.teams.home.id === teamId;
         const goalsFor = isHome ? game.goals.home : game.goals.away;
