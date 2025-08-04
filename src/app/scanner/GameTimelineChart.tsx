@@ -4,7 +4,7 @@
 import { useMemo, useState } from 'react';
 import { Target, Flag, ArrowLeftRight, Shield } from 'lucide-react';
 
-const SvgText = (props: any) => <text {...props}></text>;
+const SvgText = (props: any) => <span {...props}></span>;
 
 // Sub-componente para criar cada item da legenda de forma consistente
 const LegendItem = ({ icon, label }: { icon: React.ReactNode, label: string }) => (

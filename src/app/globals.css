@@ -64,3 +64,6 @@ body {
   filter: blur(3px); /* O desfoque aplicado SOMENTE À IMAGEM DE FUNDO */
   -webkit-filter: blur(3px); /* Compatibilidade */
 }
+html, body, #__next {
+  overflow: visible !important;
+}

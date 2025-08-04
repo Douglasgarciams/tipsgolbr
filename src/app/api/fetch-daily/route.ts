@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = process.env.API_FOOTBALL_HOST;
 
+// Função original, simples e direta
 async function fetchRapidAPI(path: string, params: Record<string, any> = {}) {
   if (!API_KEY || !API_HOST) {
     throw new Error("As variáveis de ambiente da API não foram encontradas.");
@@ -31,11 +32,9 @@ export async function GET() {
     tomorrow.setDate(today.getDate() + 1);
     
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
-    
-    // 👇 CORREÇÃO: Adicionado o parâmetro 'timezone' para garantir a data correta
     const timezone = "America/Sao_Paulo"; 
 
-    // Busca jogos para hoje e amanhã, usando o fuso horário correto
+    // Busca apenas a primeira página de jogos para hoje e amanhã (rápido e seguro)
     const [todayFixturesRes, tomorrowFixturesRes] = await Promise.all([
       fetchRapidAPI("fixtures", { date: formatDate(today), timezone: timezone }),
       fetchRapidAPI("fixtures", { date: formatDate(tomorrow), timezone: timezone })
@@ -46,6 +45,7 @@ export async function GET() {
         ...(tomorrowFixturesRes?.response || [])
     ];
 
+    // Lógica para buscar as classificações (sem alteração)
     const uniqueLeagueIds = Array.from(new Set(allFixtures.map(f => f.league.id)));
     const season = new Date().getFullYear();
     const standingsPromises = uniqueLeagueIds.map(leagueId => 
@@ -63,6 +63,7 @@ export async function GET() {
         fixtures: allFixtures,
         standings: standingsData,
     });
+
   } catch (error: any) {
     console.error("ERRO CRÍTICO em /api/fetch-daily:", error);
     return NextResponse.json({ error: { message: error.message } }, { status: 500 });

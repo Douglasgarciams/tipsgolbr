@@ -1,5 +1,6 @@
 // ARQUIVO: src/app/jogos-do-dia/page.tsx
 
+import Image from 'next/image'; // Importe o componente de Imagem
 import JogosCliente from './JogosCliente';
 
 async function getInitialData() {
@@ -36,11 +37,32 @@ export default async function JogosDoDiaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-blue-600 text-gray-800 font-sans p-4 md:p-6">
-      <div className="max-w-screen-2xl mx-auto">
-         <h1 className="font-mono text-3xl font-bold text-white text-center text-900 mb-6">Jogos do Dia: Análise Pré-Live</h1>
-         <JogosCliente initialData={initialData} />
+    // ALTERADO: Adicionado 'h-screen' e 'flex flex-col' para controlar a altura
+    <main className="h-screen max-h-screen flex flex-col bg-slate-100 text-gray-800 font-sans p-4 md:p-6 overflow-hidden">
+      <div className="max-w-screen-2xl mx-auto w-full flex flex-col flex-1 min-h-0">
+        
+        <header className="flex items-center justify-between mb-6 flex-shrink-0">
+            <div className="w-40">
+                <Image
+                  src="/images/logosemfundo.jpg"
+                  alt="Logo do Site"
+                  width={100}
+                  height={40}
+                  priority
+                />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 text-center flex-1">
+                Análise Pré-Live
+            </h1>
+            <div className="w-40"></div>
+        </header>
+        
+        {/* ALTERADO: Adicionado 'flex-1' e 'min-h-0' para fazer o container dos jogos ocupar o espaço restante */}
+        <div className="flex-1 min-h-0">
+            <JogosCliente initialData={initialData} />
+        </div>
+
       </div>
-    </div>
+    </main>
   );
 }
