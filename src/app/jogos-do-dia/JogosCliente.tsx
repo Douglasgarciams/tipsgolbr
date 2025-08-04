@@ -627,7 +627,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedFixtureForModal, setSelectedFixtureForModal] = useState<any | null>(null);
     const [pinnedGameIds, setPinnedGameIds] = useState<number[]>([]);
-    
     const [statusFilter, setStatusFilter] = useState<'all' | 'not_started' | 'in_progress' | 'finished'>('all');
 
     useEffect(() => {
@@ -688,20 +687,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         });
     };
     
-    const handleSelectFixture = (fixtureId: number) => {
-        const allFixtures = groupedFixtures.flatMap(group => group[1].games);
-        const gameData = allFixtures.find(g => g.fixture.id === fixtureId);
-        if (gameData) {
-            setSelectedFixtureId(fixtureId);
-            fetchAnalysis(gameData);
-        }
-    };
-
-    const handleOpenAnalysisModal = (gameData: any) => {
-        setSelectedFixtureForModal(gameData);
-        setIsModalOpen(true);
-    };
-
     const uniqueLeagues = useMemo(() => {
         if (!pageData?.fixtures) return [];
         const leagues = pageData.fixtures.map((game: any) => game.league);
@@ -709,6 +694,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     }, [pageData]);
 
     const baseFilteredGames = useMemo(() => {
+        if (!pageData?.fixtures) return [];
         const formatLocalDate = (date: Date) => {
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -720,7 +706,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         tomorrow.setDate(today.getDate() + 1);
         const dateToFilter = activeDate === 'today' ? formatLocalDate(today) : formatLocalDate(tomorrow);
         
-        let filtered = pageData?.fixtures?.filter((f: any) => ALLOWED_LEAGUE_IDS.includes(f.league.id))?.filter((f: any) => {
+        let filtered = pageData.fixtures.filter((f: any) => ALLOWED_LEAGUE_IDS.includes(f.league.id))?.filter((f: any) => {
             const fixtureDateLocal = formatLocalDate(new Date(f.fixture.date));
             return fixtureDateLocal === dateToFilter;
         }) || [];
@@ -735,6 +721,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     }, [pageData, activeDate, searchQuery, selectedLeague]);
 
     const gameCounts = useMemo(() => {
+        if (!baseFilteredGames) return { all: 0, not_started: 0, in_progress: 0, finished: 0 };
         const liveStatuses = ['1H', 'HT', '2H', 'ET', 'P', 'SUSP', 'INT', 'LIVE'];
         const finishedStatuses = ['FT', 'AET', 'PEN'];
         const notStartedStatuses = ['NS', 'TBD', 'PST'];
@@ -748,6 +735,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     }, [baseFilteredGames]);
 
     const groupedFixtures = useMemo(() => {
+        if (!baseFilteredGames) return [];
         const liveStatuses = ['1H', 'HT', '2H', 'ET', 'P', 'SUSP', 'INT', 'LIVE'];
         const finishedStatuses = ['FT', 'AET', 'PEN'];
         const notStartedStatuses = ['NS', 'TBD', 'PST'];
@@ -802,9 +790,28 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return processedGroups;
     }, [baseFilteredGames, statusFilter, groupBy, pinnedGameIds]);
     
-    const allFixtures = useMemo(() => groupedFixtures.flatMap(group => group[1].games), [groupedFixtures]);
+    // **AQUI ESTÁ A CORREÇÃO PRINCIPAL**
+    // 1. A lista `allFixtures` é calculada aqui, no topo, com o tipo correto.
+    const allFixtures = useMemo(() => {
+        if (!groupedFixtures) return [];
+        // Adicionamos o tipo `GameGroup` para ajudar o TypeScript
+        return groupedFixtures.flatMap((group: GameGroup) => group[1].games);
+    }, [groupedFixtures]);
     
-    // ## AQUI ESTÁ A CORREÇÃO PARA O ERRO DE BUILD ##
+    // 2. A função `handleSelectFixture` agora usa a lista já calculada.
+    const handleSelectFixture = (fixtureId: number) => {
+        const gameData = allFixtures.find(g => g.fixture.id === fixtureId);
+        if (gameData) {
+            setSelectedFixtureId(fixtureId);
+            fetchAnalysis(gameData);
+        }
+    };
+
+    const handleOpenAnalysisModal = (gameData: any) => {
+        setSelectedFixtureForModal(gameData);
+        setIsModalOpen(true);
+    };
+
     return (
         <>
             {(!pageData || !pageData.fixtures) ? (
