@@ -48,7 +48,7 @@ export default async function HomePage() {
             href="/analise-resultados"
             className="inline-block bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
           >
-            Grafico
+            Planilha/Grafico
             </Link>
             {/* 👇 BOTÃO ADICIONADO 👇 */}
           <Link
