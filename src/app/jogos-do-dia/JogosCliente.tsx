@@ -241,15 +241,43 @@ const RecentGamesStatsPanel = ({ homeTeamForm, awayTeamForm, homeId, awayId }: a
     const calculateRecentStats = (teamForm: any[], teamId: number) => {
         if (!teamForm || teamForm.length === 0) return {};
         const numGames = teamForm.length;
-        let stats = { htGoalScored: 0, over1_5: 0, over2_5: 0, blowoutsApplied: 0, blowoutsConceded: 0, scoredFirst: 0, concededFirst: 0, btts: 0, failedToScore: 0, cleanSheets: 0, scoredInST: 0, winsAtHome: 0, totalHomeGames: 0, winsAway: 0, totalAwayGames: 0 };
+        
+        // Mantive todos os seus stats originais e adicionei os novos
+        let stats = { 
+            htGoalScored: 0, 
+            over1_5: 0, 
+            over2_5: 0, 
+            blowoutsApplied: 0, 
+            blowoutsConceded: 0, 
+            scoredFirst: 0, 
+            concededFirst: 0, 
+            btts: 0, 
+            failedToScore: 0, 
+            cleanSheets: 0, 
+            scoredInST: 0, 
+            winsAtHome: 0, 
+            totalHomeGames: 0, 
+            winsAway: 0, 
+            totalAwayGames: 0,
+            // NOVOS ACUMULADORES
+            over0_5: 0,
+            under1_5: 0,
+            under2_5: 0,
+            lostAfterLeading: 0,
+            scoredBothHalves: 0,
+            winToNil: 0
+        };
+
         teamForm.forEach(game => {
             const isThisTeamHome = game.teams.home.id === teamId;
             const scored = isThisTeamHome ? game.goals.home : game.goals.away;
             const conceded = isThisTeamHome ? game.goals.away : game.goals.home;
             const htScored = isThisTeamHome ? game.score.halftime.home : game.score.halftime.away;
             const htConceded = isThisTeamHome ? game.score.halftime.away : game.score.halftime.home;
-            const stScored = scored - htScored;
+            const stScored = scored - (htScored || 0); // (htScored || 0) para segurança
             const totalGoals = game.goals.home + game.goals.away;
+
+            // Lógica original (sem alterações)
             if (htScored > 0) stats.htGoalScored++;
             if (totalGoals > 1.5) stats.over1_5++;
             if (totalGoals > 2.5) stats.over2_5++;
@@ -260,18 +288,49 @@ const RecentGamesStatsPanel = ({ homeTeamForm, awayTeamForm, homeId, awayId }: a
             if (conceded === 0) stats.cleanSheets++;
             if (stScored > 0) stats.scoredInST++;
             if (isThisTeamHome) { stats.totalHomeGames++; if (scored > conceded) stats.winsAtHome++; } else { stats.totalAwayGames++; if (scored > conceded) stats.winsAway++; }
+            
+            // ### NOVOS CÁLCULOS ADICIONADOS ###
+            if (totalGoals > 0.5) stats.over0_5++;
+            if (totalGoals < 1.5) stats.under1_5++;
+            if (totalGoals < 2.5) stats.under2_5++;
+            if (htScored > htConceded && scored < conceded) stats.lostAfterLeading++;
+            if (htScored > 0 && stScored > 0) stats.scoredBothHalves++;
+            if (scored > conceded && conceded === 0) stats.winToNil++;
         });
+
         const toPercent = (value: number, total = numGames) => {
             if (total === 0) return '0';
             return ((value / total) * 100).toFixed(0);
         };
+
+        // Objeto de retorno com todas as estatísticas (originais + novas)
         return {
-            'Jogos com gol no HT (%)': toPercent(stats.htGoalScored), 'Jogos Over 1.5 FT (%)': toPercent(stats.over1_5), 'Jogos Over 2.5 FT (%)': toPercent(stats.over2_5), 'Goleadas Aplicadas (Venceu com 4+ gols)': toPercent(stats.blowoutsApplied), 'Goleadas Sofridas (Perdeu com 4+ gols)': toPercent(stats.blowoutsConceded), 'Marcou o 1º gol (no HT)': toPercent(stats.scoredFirst), 'Sofreu o 1º gol (no HT)': toPercent(stats.concededFirst), 'Ambas Marcam (%)': toPercent(stats.btts), 'Jogos Sem Marcar Gol (%)': toPercent(stats.failedToScore), 'Jogos Sem Sofrer Gol (%)': toPercent(stats.cleanSheets), 'Jogos com Gol no 2ºT (%)': toPercent(stats.scoredInST), 'Vitórias em Casa (%)': toPercent(stats.winsAtHome, stats.totalHomeGames), 'Vitórias Fora (%)': toPercent(stats.winsAway, stats.totalAwayGames),
+            'Jogos com gol no HT (%)': toPercent(stats.htGoalScored),
+            'Jogos Over 0.5 FT (%)': toPercent(stats.over0_5),
+            'Jogos Over 1.5 FT (%)': toPercent(stats.over1_5),
+            'Jogos Over 2.5 FT (%)': toPercent(stats.over2_5),
+            'Jogos Under 1.5 FT (%)': toPercent(stats.under1_5),
+            'Jogos Under 2.5 FT (%)': toPercent(stats.under2_5),
+            'Ambas Marcam (%)': toPercent(stats.btts),
+            'Marcou em Ambos os Tempos (%)': toPercent(stats.scoredBothHalves),
+            'Goleadas Aplicadas (Venceu com 4+ gols)': toPercent(stats.blowoutsApplied),
+            'Goleadas Sofridas (Perdeu com 4+ gols)': toPercent(stats.blowoutsConceded),
+            'Jogos que tomou virada (%)': toPercent(stats.lostAfterLeading),
+            'Marcou o 1º gol (no HT)': toPercent(stats.scoredFirst),
+            'Sofreu o 1º gol (no HT)': toPercent(stats.concededFirst),
+            'Jogos Sem Marcar Gol (%)': toPercent(stats.failedToScore),
+            'Jogos Sem Sofrer Gol (%)': toPercent(stats.cleanSheets),
+            'Vitórias sem sofrer gols (%)': toPercent(stats.winToNil),
+            'Jogos com Gol no 2ºT (%)': toPercent(stats.scoredInST),
+            'Vitórias em Casa (%)': toPercent(stats.winsAtHome, stats.totalHomeGames),
+            'Vitórias Fora (%)': toPercent(stats.winsAway, stats.totalAwayGames),
         };
     };
+
     const homeStats = calculateRecentStats(homeTeamForm, homeId);
     const awayStats = calculateRecentStats(awayTeamForm, awayId);
     const statLabels = Object.keys(homeStats);
+
     return (
         <div className="space-y-3 text-xs">{statLabels.map(label => (<div key={label} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"><div className="flex items-center justify-end"><span className="font-bold text-gray-700 mr-2">{homeStats[label]}%</span><div className="w-20 bg-gray-200 rounded-full h-2.5"><div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${homeStats[label]}%` }}></div></div></div><div className="text-center text-gray-500 font-semibold px-1">{label}</div><div className="flex items-center"><div className="w-20 bg-gray-200 rounded-full h-2.5"><div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${awayStats[label]}%` }}></div></div><span className="font-bold text-gray-700 ml-2">{awayStats[label]}%</span></div></div>))}</div>
     );
@@ -321,7 +380,8 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
     const [activeTab, setActiveTab] = useState('radar');
     const [formView, setFormView] = useState<'all' | 'home' | 'away'>('all');
     
-    const { fixture, teams, league, goals } = fixtureData;
+    // CORREÇÃO: Acessamos fixtureData diretamente quando necessário ou desestruturamos apenas o necessário.
+    const { teams, league } = fixtureData;
 
     const goalAverages = useMemo(() => {
         const calculate = (teamForm: any[], teamId: number) => {
@@ -335,26 +395,37 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
             const numGames = teamForm.length;
             return { scored: metrics.scored / numGames, conceded: metrics.conceded / numGames };
         };
-        if (!analysisData) return null;
+        
+        // Adicionamos uma verificação de segurança para a análise
+        if (!analysisData || !analysisData.homeTeamForm || !analysisData.awayTeamForm) {
+            return null;
+        }
+
         const home = calculate(analysisData.homeTeamForm, teams.home.id);
         const away = calculate(analysisData.awayTeamForm, teams.away.id);
         return { home, away };
-    }, [analysisData, teams]);
+    // CORREÇÃO: A dependência agora é mais específica e correta
+    }, [analysisData, teams.home.id, teams.away.id]);
     
     return (
         <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-500">
             <GameHeader fixtureData={fixtureData} analysisData={analysisData} />
-            <>{goalAverages && (<div className="grid grid-cols-2 gap-4 text-center border-y py-3 my-4">
-                <div>
-                    <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.homeTeamForm.length} Jogos)</p>
-                    <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.home.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.home.conceded.toFixed(2)}</span></p></div>
+            
+            {goalAverages && (
+                <div className="grid grid-cols-2 gap-4 text-center border-y py-3 my-4">
+                    <div>
+                        <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.homeTeamForm.length} Jogos)</p>
+                        <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.home.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.home.conceded.toFixed(2)}</span></p></div>
+                    </div>
+                    <div>
+                        <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.awayTeamForm.length} Jogos)</p>
+                        <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.away.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.away.conceded.toFixed(2)}</span></p></div>
+                    </div>
                 </div>
-                <div>
-                    <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.awayTeamForm.length} Jogos)</p>
-                    <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.away.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.away.conceded.toFixed(2)}</span></p></div>
-                </div>
-            </div>)}
-            <button onClick={onOpenModal} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors mb-4"><BrainCircuit size={20} /> Ver Análise da IA</button>
+            )}
+
+            <button onClick={() => onOpenModal(fixtureData)} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors mb-4"><BrainCircuit size={20} /> Ver Análise da IA</button>
+            
             <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
                 <ul className="flex flex-wrap -mb-px">
                     <li className="mr-2"><button onClick={() => setActiveTab('stats')} className={`inline-block p-2 border-b-2 rounded-t-lg ${activeTab === 'stats' ? 'text-blue-600 border-blue-600' : 'border-transparent hover:text-gray-600'}`}>Estatísticas %</button></li>
@@ -402,7 +473,6 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
                 {activeTab === 'odds' && (<div className="space-y-4"><OddMarket title="Vencedor da Partida" oddsData={analysisData.odds.matchWinner} /><OddMarket title="Mais/Menos" oddsData={analysisData.odds.overUnder_2_5} /></div>)}
                 {activeTab === 'backtest' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-6"><BacktestAnalysisPanel teamForm={analysisData.homeTeamForm} teamId={teams.home.id} teamName={teams.home.name} /><BacktestAnalysisPanel teamForm={analysisData.awayTeamForm} teamId={teams.away.id} teamName={teams.away.name} /></div>)}
             </div>
-            </>
         </div>
     );
 };
