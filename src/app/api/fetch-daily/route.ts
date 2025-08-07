@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 const API_KEY = process.env.API_FOOTBALL_KEY;
 const API_HOST = process.env.API_FOOTBALL_HOST;
 
-// Função original, simples e direta
 async function fetchRapidAPI(path: string, params: Record<string, any> = {}) {
   if (!API_KEY || !API_HOST) {
     throw new Error("As variáveis de ambiente da API não foram encontradas.");
@@ -27,17 +26,31 @@ async function fetchRapidAPI(path: string, params: Record<string, any> = {}) {
 
 export async function GET() {
   try {
+    const timezone = "America/Sao_Paulo"; 
+
+    // ### LÓGICA DE DATA CORRIGIDA ###
+    // Função para formatar a data corretamente no fuso horário do Brasil
+    const getBrazilianDate = (date: Date) => {
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: timezone,
+        });
+        return formatter.format(date);
+    };
+
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
-    
-    const formatDate = (date: Date) => date.toISOString().split('T')[0];
-    const timezone = "America/Sao_Paulo"; 
 
-    // Busca apenas a primeira página de jogos para hoje e amanhã (rápido e seguro)
+    const todayFormatted = getBrazilianDate(today);
+    const tomorrowFormatted = getBrazilianDate(tomorrow);
+    
+    // Busca os jogos para hoje e amanhã usando as datas corretas do Brasil
     const [todayFixturesRes, tomorrowFixturesRes] = await Promise.all([
-      fetchRapidAPI("fixtures", { date: formatDate(today), timezone: timezone }),
-      fetchRapidAPI("fixtures", { date: formatDate(tomorrow), timezone: timezone })
+      fetchRapidAPI("fixtures", { date: todayFormatted, timezone: timezone }),
+      fetchRapidAPI("fixtures", { date: tomorrowFormatted, timezone: timezone })
     ]);
     
     const allFixtures = [
