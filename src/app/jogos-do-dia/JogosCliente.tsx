@@ -2,20 +2,167 @@
 import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { LoaderCircle, Search, ChevronDown, BrainCircuit, X, CornerUpLeft, Shield, Square, ExternalLink, Star } from 'lucide-react'; 
+import { LoaderCircle, Search, ChevronDown, BrainCircuit, X, CornerUpLeft, Shield, Square, ExternalLink, Star, TrendingUp, Flame, ShieldAlert, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 import { RadarAnalysisChart } from './RadarChart';
 import { BacktestAnalysisPanel } from './BacktestAnalysisPanel';
 
+// Definição de tipo para os grupos de jogos para ajudar o TypeScript
+type GameGroup = [string, { games: any[] }];
 
 // Filtro de Ligas Permitidas
 const ALLOWED_LEAGUE_IDS = [
-    2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 121, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 255, 256, 257, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 304, 328, 329, 334, 345, 346, 347, 358, 366, 367, 392, 489, 78, 473, 474, 491, 501, 503, 523, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 770, 772, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
+    2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 255, 256, 257, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 304, 328, 329, 334, 345, 346, 347, 358, 366, 367, 392, 489, 78, 473, 474, 491, 501, 503, 523, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 770, 772, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
 ];
 
-// **AQUI ESTÁ A CORREÇÃO**
-// Definição de tipo para os grupos de jogos para ajudar o TypeScript
-type GameGroup = [string, { games: any[] }];
+// 1. Função que calcula todas as estatísticas que seus métodos podem precisar
+const calculateAllStatsForMethods = (teamId: number, teamForm: any[]) => {
+    if (!teamForm || teamForm.length === 0) return {};
+    const numGames = teamForm.length;
+    let stats = {
+        htGoalScored: 0,
+        ftGoalScored: 0,
+        htGoalConceded: 0,
+        ftGoalConceded: 0,
+        winsAtHome: 0,
+        totalHomeGames: 0,
+        over2_5: 0,
+    };
+    teamForm.forEach(game => {
+        const isThisTeamHome = game.teams.home.id === teamId;
+        const scored = isThisTeamHome ? game.goals.home : game.goals.away;
+        const conceded = isThisTeamHome ? game.goals.away : game.goals.home;
+        const htScored = isThisTeamHome ? game.score.halftime.home : game.score.halftime.away;
+        const htConceded = isThisTeamHome ? game.score.halftime.away : game.score.halftime.home;
+        const totalGoals = game.goals.home + game.goals.away;
+        if (htScored > 0) stats.htGoalScored++;
+        if (scored > 0) stats.ftGoalScored++;
+        if (htConceded > 0) stats.htGoalConceded++;
+        if (conceded > 0) stats.ftGoalConceded++;
+        if (totalGoals > 2.5) stats.over2_5++;
+        if (isThisTeamHome) {
+            stats.totalHomeGames++;
+            if (scored > conceded) stats.winsAtHome++;
+        }
+    });
+    const toPercent = (value: number, total = numGames) => (total === 0 ? 0 : Math.round((value / total) * 100));
+    return {
+        marcouGolHTPercent: toPercent(stats.htGoalScored),
+        marcouGolFTPercent: toPercent(stats.ftGoalScored),
+        sofreuGolHTPercent: toPercent(stats.htGoalConceded),
+        sofreuGolFTPercent: toPercent(stats.ftGoalConceded),
+        homeWinPercent: toPercent(stats.winsAtHome, stats.totalHomeGames),
+        over2_5FTPercent: toPercent(stats.over2_5),
+    };
+};
+
+// 2. Array com a definição de todos os seus métodos
+const metodos = [
+    { name: 'ENTRADA LAY 0X1', checker: (homeStats: any, awayStats: any, odds: any) => { const homeScoredHT = (homeStats.marcouGolHTPercent || 0) >= 70; const homeScoredFT = (homeStats.marcouGolFTPercent || 0) >= 80; const awayConcededHT = (awayStats.sofreuGolHTPercent || 0) >= 30; const awayConcededFT = (awayStats.sofreuGolFTPercent || 0) >= 60; const oddsCondition = odds.home <= odds.away; return homeScoredHT && homeScoredFT && awayConcededHT && awayConcededFT && oddsCondition; } },
+    { name: 'ENTRADA LAY 0X3', checker: (homeStats: any, awayStats: any, odds: any) => { const homeScoredHT = (homeStats.marcouGolHTPercent || 0) >= 50; const homeScoredFT = (homeStats.marcouGolFTPercent || 0) >= 80; const awayConcededFT = (awayStats.sofreuGolFTPercent || 0) >= 60; const oddsCondition = odds.home > 2.00 && odds.away > 2.80; const homeWinPercent = (homeStats.homeWinPercent || 0) >= 50; return homeScoredHT && homeScoredFT && awayConcededFT && oddsCondition && homeWinPercent; } },
+    { name: 'ENTRADA LAY 2x2', checker: (homeStats: any, awayStats: any, odds: any) => { if (!odds.home) return false; const homeOddCondition = odds.home <= 1.40; const over25Condition = (homeStats.over2_5FTPercent || 0) >= 50; return homeOddCondition && over25Condition; } },
+];
+
+// 3. Função central que verifica todos os métodos de uma vez
+const verificarMetodos = (analysisData: any) => {
+    if (!analysisData || !analysisData.parameters || !analysisData.odds?.matchWinner || !analysisData.homeTeamForm || !analysisData.awayTeamForm) { return []; }
+    const homeId = parseInt(analysisData.parameters.homeTeamId);
+    const awayId = parseInt(analysisData.parameters.awayTeamId);
+    const homeStats = calculateAllStatsForMethods(homeId, analysisData.homeTeamForm);
+    const awayStats = calculateAllStatsForMethods(awayId, analysisData.awayTeamForm);
+    const oddsValues = analysisData.odds.matchWinner?.bookmakers[0]?.bets[0]?.values;
+    if (!oddsValues) return [];
+    const homeOddValue = oddsValues.find((o: any) => o.value === 'Home')?.odd;
+    const awayOddValue = oddsValues.find((o: any) => o.value === 'Away')?.odd;
+    if (!homeOddValue || !awayOddValue) return [];
+    const odds = { home: parseFloat(homeOddValue), away: parseFloat(awayOddValue) };
+    const matchedMethods = [];
+    for (const metodo of metodos) {
+        if (metodo.checker(homeStats, awayStats, odds)) {
+            matchedMethods.push(metodo.name);
+        }
+    }
+    return matchedMethods;
+};
+
+const calculateDetailedStats = (teamForm: any[], teamId: number) => {
+    if (!teamForm || teamForm.length === 0) return {};
+    const numGames = teamForm.length;
+    let stats = { htGoalScored: 0, over0_5: 0, over1_5: 0, over2_5: 0, over3_5: 0, under1_5: 0, under2_5: 0, lostAfterLeading: 0, scoredBothHalves: 0, winToNil: 0, blowoutsApplied: 0, blowoutsConceded: 0, scoredFirst: 0, concededFirst: 0, btts: 0, failedToScore: 0, cleanSheets: 0, scoredInST: 0, winsAtHome: 0, totalHomeGames: 0, winsAway: 0, totalAwayGames: 0 };
+    teamForm.forEach(game => {
+        const isThisTeamHome = game.teams.home.id === teamId;
+        const scored = isThisTeamHome ? game.goals.home : game.goals.away;
+        const conceded = isThisTeamHome ? game.goals.away : game.goals.home;
+        const htScored = isThisTeamHome ? game.score.halftime.home : game.score.halftime.away;
+        const htConceded = isThisTeamHome ? game.score.halftime.away : game.score.halftime.home;
+        const stScored = scored - (htScored || 0);
+        const totalGoals = game.goals.home + game.goals.away;
+        if (totalGoals > 0.5) stats.over0_5++;
+        if (totalGoals < 1.5) stats.under1_5++;
+        if (totalGoals < 2.5) stats.under2_5++;
+        if (htScored > htConceded && scored < conceded) stats.lostAfterLeading++;
+        if (htScored > 0 && stScored > 0) stats.scoredBothHalves++;
+        if (scored > conceded && conceded === 0) stats.winToNil++;
+        if (htScored > 0) stats.htGoalScored++;
+        if (totalGoals > 1.5) stats.over1_5++;
+        if (totalGoals > 2.5) stats.over2_5++;
+        if (totalGoals > 3.5) stats.over3_5++;
+        if (totalGoals >= 4) { if (scored > conceded) stats.blowoutsApplied++; else if (conceded > scored) stats.blowoutsConceded++; }
+        if (htScored !== null && htConceded !== null) { if (htScored > htConceded) { stats.scoredFirst++; } else if (htConceded > htScored) { stats.concededFirst++; } }
+        if (scored > 0 && conceded > 0) stats.btts++;
+        if (scored === 0) stats.failedToScore++;
+        if (conceded === 0) stats.cleanSheets++;
+        if (stScored > 0) stats.scoredInST++;
+        if (isThisTeamHome) { stats.totalHomeGames++; if (scored > conceded) stats.winsAtHome++; } else { stats.totalAwayGames++; if (scored > conceded) stats.winsAway++; }
+    });
+    const toPercent = (value: number, total = numGames) => {
+        if (total === 0) return '0';
+        return ((value / total) * 100).toFixed(0);
+    };
+    return {
+        'Jogos com gol no HT (%)': toPercent(stats.htGoalScored), 'Jogos Over 0.5 FT (%)': toPercent(stats.over0_5), 'Jogos Over 1.5 FT (%)': toPercent(stats.over1_5), 'Jogos Over 2.5 FT (%)': toPercent(stats.over2_5), 'Jogos Over 3.5 FT (%)': toPercent(stats.over3_5), 'Jogos Under 1.5 FT (%)': toPercent(stats.under1_5), 'Jogos Under 2.5 FT (%)': toPercent(stats.under2_5), 'Ambas Marcam (%)': toPercent(stats.btts), 'Marcou em Ambos os Tempos (%)': toPercent(stats.scoredBothHalves), 'Vitórias sem sofrer gols (%)': toPercent(stats.winToNil), 'Goleadas Aplicadas (Venceu com 4+ gols)': toPercent(stats.blowoutsApplied), 'Goleadas Sofridas (Perdeu com 4+ gols)': toPercent(stats.blowoutsConceded), 'Jogos que tomou virada (%)': toPercent(stats.lostAfterLeading), 'Marcou o 1º gol (no HT)': toPercent(stats.scoredFirst), 'Sofreu o 1º gol (no HT)': toPercent(stats.concededFirst), 'Jogos Sem Marcar Gol (%)': toPercent(stats.failedToScore), 'Jogos Sem Sofrer Gol (%)': toPercent(stats.cleanSheets), 'Jogos com Gol no 2ºT (%)': toPercent(stats.scoredInST), 'Vitórias em Casa (%)': toPercent(stats.winsAtHome, stats.totalHomeGames), 'Vitórias Fora (%)': toPercent(stats.winsAway, stats.totalAwayGames),
+    };
+};
+
+const calculatePowerScore = (stats: Record<string, string>) => {
+    if (Object.keys(stats).length === 0) return 0;
+    let score = 0;
+    score += parseInt(stats['Jogos Over 2.5 FT (%)']) * 0.20;
+    score += parseInt(stats['Goleadas Aplicadas (Venceu com 4+ gols)']) * 0.15;
+    score += parseInt(stats['Vitórias em Casa (%)']) * 0.15;
+    score += parseInt(stats['Vitórias Fora (%)']) * 0.20;
+    score += parseInt(stats['Jogos com Gol no 2ºT (%)']) * 0.10;
+    score += parseInt(stats['Jogos Sem Sofrer Gol (%)']) * 0.15;
+    score -= parseInt(stats['Goleadas Sofridas (Perdeu com 4+ gols)']) * 0.15;
+    score -= parseInt(stats['Jogos Sem Marcar Gol (%)']) * 0.10;
+    return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+const PowerScoreDisplay = ({ score }: { score: number }) => {
+    let icon = <ShieldAlert size={24} className="text-gray-400" />;
+    let text = "Neutro";
+    let color = "text-gray-500";
+    if (score >= 75) {
+        icon = <Flame size={24} className="text-red-500" />;
+        text = "Muito Forte";
+        color = "text-red-600";
+    } else if (score >= 50) {
+        icon = <TrendingUp size={24} className="text-green-500" />;
+        text = "Forte";
+        color = "text-green-600";
+    } else if (score < 30) {
+        icon = <TrendingDown size={24} className="text-yellow-500" />;
+        text = "Fraco";
+        color = "text-yellow-600";
+    }
+    return (
+        <div className="flex flex-col items-center justify-center text-center">
+            {icon}
+            <p className={`font-bold text-xl ${color}`}>{score}</p>
+            <p className="text-xs text-gray-500">{text}</p>
+        </div>
+    );
+};
 
 // ============================================================================
 // SEÇÃO DE SUB-COMPONENTES
@@ -77,18 +224,10 @@ const CollapsibleGameRow = ({ fixture }: any) => {
 
 const TeamFormAnalysis = ({ teamName, teamId, teamForm, venueFilter }: { teamName: string, teamId: number, teamForm: any[], venueFilter?: 'Home' | 'Away' }) => {
     const filteredGames = useMemo(() => {
-        if (!teamForm || teamForm.length === 0) {
-            return [];
-        }
-
-        if (!venueFilter) {
-            return teamForm;
-        }
-
+        if (!teamForm || teamForm.length === 0) return [];
+        if (!venueFilter) return teamForm;
         return teamForm.filter(game => {
-            if (venueFilter === 'Home') {
-                return game.teams.home.id === teamId;
-            }
+            if (venueFilter === 'Home') return game.teams.home.id === teamId;
             return game.teams.away.id === teamId;
         });
     }, [teamForm, teamId, venueFilter]);
@@ -184,7 +323,7 @@ const AiAnalysisModal = ({ fixtureData, analysisData, pageData, onClose }: any) 
         const awayFormScore = getFormScore(awayTeamForm, teams.away.id);
         if (homeFormScore > awayFormScore) homeScore += 1.5; else if (awayFormScore > homeFormScore) awayScore += 1.5;
         summary.push(`Em termos de forma, o ${teams.home.name} somou ${homeFormScore} pontos nos últimos ${homeTeamForm.length} jogos, e o ${teams.away.name} somou ${awayFormScore}.`);
-        const getGoalAvg = (form: any[], teamId: number) => { if (!form || form.length === 0) return { scored: 0, conceded: 0 }; const metrics = form.reduce((acc, game) => { const isHome = game.teams.home.id === teamId; acc.scored += isHome ? game.goals.home : game.goals.away; acc.conceded += isHome ? game.goals.away : game.goals.home; return acc; }, { scored: 0, conceded: 0 }); return { scored: metrics.scored / form.length, conceded: metrics.conceded / form.length }; };
+        const getGoalAvg = (form: any[], teamId: number) => { if (!form || form.length === 0) return { scored: 0, conceded: 0 }; const metrics = form.reduce((acc, game) => { const isThisTeamHome = game.teams.home.id === teamId; acc.scored += isThisTeamHome ? game.goals.home : game.goals.away; acc.conceded += isThisTeamHome ? game.goals.away : game.goals.home; return acc; }, { scored: 0, conceded: 0 }); return { scored: metrics.scored / form.length, conceded: metrics.conceded / form.length }; };
         const homeGoals = getGoalAvg(homeTeamForm, teams.home.id);
         const awayGoals = getGoalAvg(awayTeamForm, teams.away.id);
         if (homeGoals.scored > awayGoals.scored) homeScore += 1; else if (awayGoals.scored > homeGoals.scored) awayScore += 1;
@@ -218,11 +357,19 @@ const LineupsPanel = ({ lineupData }: { lineupData: any[] }) => {
     const homeLineup = lineupData[0];
     const awayLineup = lineupData[1];
     const PlayerList = ({ title, players }: { title: string, players: any[] }) => (
-        <div>
-            <h5 className="font-bold text-sm mb-2 text-gray-800">{title}</h5>
-            <ul className="space-y-1 text-xs">{players.map(p => (<li key={p.player.id} className="p-1 bg-gray-100 rounded"><span className="font-semibold text-gray-600 mr-2">{p.player.number}</span>{p.player.name}</li>))}</ul>
-        </div>
-    );
+    <div>
+        <h5 className="font-bold text-sm mb-2 text-gray-800">{title}</h5>
+        <ul className="space-y-1 text-xs">
+            {/* Adicionamos a verificação "players &&" antes do map */}
+            {players && players.map(p => (
+                <li key={p.player.id} className="p-1 bg-gray-100 rounded">
+                    <span className="font-semibold text-gray-600 mr-2">{p.player.number}</span>
+                    {p.player.name}
+                </li>
+            ))}
+        </ul>
+    </div>
+);
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -238,99 +385,9 @@ const LineupsPanel = ({ lineupData }: { lineupData: any[] }) => {
 };
 
 const RecentGamesStatsPanel = ({ homeTeamForm, awayTeamForm, homeId, awayId }: any) => {
-    const calculateRecentStats = (teamForm: any[], teamId: number) => {
-        if (!teamForm || teamForm.length === 0) return {};
-        const numGames = teamForm.length;
-        
-        // Mantive todos os seus stats originais e adicionei os novos
-        let stats = { 
-            htGoalScored: 0, 
-            over1_5: 0, 
-            over2_5: 0, 
-            blowoutsApplied: 0, 
-            blowoutsConceded: 0, 
-            scoredFirst: 0, 
-            concededFirst: 0, 
-            btts: 0, 
-            failedToScore: 0, 
-            cleanSheets: 0, 
-            scoredInST: 0, 
-            winsAtHome: 0, 
-            totalHomeGames: 0, 
-            winsAway: 0, 
-            totalAwayGames: 0,
-            // NOVOS ACUMULADORES
-            over0_5: 0,
-            under1_5: 0,
-            under2_5: 0,
-            lostAfterLeading: 0,
-            scoredBothHalves: 0,
-            winToNil: 0
-        };
-
-        teamForm.forEach(game => {
-            const isThisTeamHome = game.teams.home.id === teamId;
-            const scored = isThisTeamHome ? game.goals.home : game.goals.away;
-            const conceded = isThisTeamHome ? game.goals.away : game.goals.home;
-            const htScored = isThisTeamHome ? game.score.halftime.home : game.score.halftime.away;
-            const htConceded = isThisTeamHome ? game.score.halftime.away : game.score.halftime.home;
-            const stScored = scored - (htScored || 0); // (htScored || 0) para segurança
-            const totalGoals = game.goals.home + game.goals.away;
-
-            // Lógica original (sem alterações)
-            if (htScored > 0) stats.htGoalScored++;
-            if (totalGoals > 1.5) stats.over1_5++;
-            if (totalGoals > 2.5) stats.over2_5++;
-            if (totalGoals >= 4) { if (scored > conceded) stats.blowoutsApplied++; else if (conceded > scored) stats.blowoutsConceded++; }
-            if (htScored !== null && htConceded !== null) { if (htScored > htConceded) { stats.scoredFirst++; } else if (htConceded > htScored) { stats.concededFirst++; } }
-            if (scored > 0 && conceded > 0) stats.btts++;
-            if (scored === 0) stats.failedToScore++;
-            if (conceded === 0) stats.cleanSheets++;
-            if (stScored > 0) stats.scoredInST++;
-            if (isThisTeamHome) { stats.totalHomeGames++; if (scored > conceded) stats.winsAtHome++; } else { stats.totalAwayGames++; if (scored > conceded) stats.winsAway++; }
-            
-            // ### NOVOS CÁLCULOS ADICIONADOS ###
-            if (totalGoals > 0.5) stats.over0_5++;
-            if (totalGoals < 1.5) stats.under1_5++;
-            if (totalGoals < 2.5) stats.under2_5++;
-            if (htScored > htConceded && scored < conceded) stats.lostAfterLeading++;
-            if (htScored > 0 && stScored > 0) stats.scoredBothHalves++;
-            if (scored > conceded && conceded === 0) stats.winToNil++;
-        });
-
-        const toPercent = (value: number, total = numGames) => {
-            if (total === 0) return '0';
-            return ((value / total) * 100).toFixed(0);
-        };
-
-        // Objeto de retorno com todas as estatísticas (originais + novas)
-        return {
-            'Jogos com gol no HT (%)': toPercent(stats.htGoalScored),
-            'Jogos Over 0.5 FT (%)': toPercent(stats.over0_5),
-            'Jogos Over 1.5 FT (%)': toPercent(stats.over1_5),
-            'Jogos Over 2.5 FT (%)': toPercent(stats.over2_5),
-            'Jogos Under 1.5 FT (%)': toPercent(stats.under1_5),
-            'Jogos Under 2.5 FT (%)': toPercent(stats.under2_5),
-            'Ambas Marcam (%)': toPercent(stats.btts),
-            'Marcou em Ambos os Tempos (%)': toPercent(stats.scoredBothHalves),
-            'Goleadas Aplicadas (Venceu com 4+ gols)': toPercent(stats.blowoutsApplied),
-            'Goleadas Sofridas (Perdeu com 4+ gols)': toPercent(stats.blowoutsConceded),
-            'Jogos que tomou virada (%)': toPercent(stats.lostAfterLeading),
-            'Marcou o 1º gol (no HT)': toPercent(stats.scoredFirst),
-            'Sofreu o 1º gol (no HT)': toPercent(stats.concededFirst),
-            'Jogos Sem Marcar Gol (%)': toPercent(stats.failedToScore),
-            'Jogos Sem Sofrer Gol (%)': toPercent(stats.cleanSheets),
-            'Vitórias sem sofrer gols (%)': toPercent(stats.winToNil),
-            'Jogos com Gol no 2ºT (%)': toPercent(stats.scoredInST),
-            'Vitórias em Casa (%)': toPercent(stats.winsAtHome, stats.totalHomeGames),
-            'Vitórias Fora (%)': toPercent(stats.winsAway, stats.totalAwayGames),
-        };
-    };
-
-    const homeStats = calculateRecentStats(homeTeamForm, homeId);
-    const awayStats = calculateRecentStats(awayTeamForm, awayId);
+    const homeStats = calculateDetailedStats(homeTeamForm, homeId);
+    const awayStats = calculateDetailedStats(awayTeamForm, awayId);
     const statLabels = Object.keys(homeStats);
-
     return (
         <div className="space-y-3 text-xs">{statLabels.map(label => (<div key={label} className="grid grid-cols-[1fr_auto_1fr] items-center gap-2"><div className="flex items-center justify-end"><span className="font-bold text-gray-700 mr-2">{homeStats[label]}%</span><div className="w-20 bg-gray-200 rounded-full h-2.5"><div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${homeStats[label]}%` }}></div></div></div><div className="text-center text-gray-500 font-semibold px-1">{label}</div><div className="flex items-center"><div className="w-20 bg-gray-200 rounded-full h-2.5"><div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${awayStats[label]}%` }}></div></div><span className="font-bold text-gray-700 ml-2">{awayStats[label]}%</span></div></div>))}</div>
     );
@@ -380,7 +437,6 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
     const [activeTab, setActiveTab] = useState('radar');
     const [formView, setFormView] = useState<'all' | 'home' | 'away'>('all');
     
-    // CORREÇÃO: Acessamos fixtureData diretamente quando necessário ou desestruturamos apenas o necessário.
     const { teams, league } = fixtureData;
 
     const goalAverages = useMemo(() => {
@@ -396,7 +452,6 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
             return { scored: metrics.scored / numGames, conceded: metrics.conceded / numGames };
         };
         
-        // Adicionamos uma verificação de segurança para a análise
         if (!analysisData || !analysisData.homeTeamForm || !analysisData.awayTeamForm) {
             return null;
         }
@@ -404,25 +459,69 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
         const home = calculate(analysisData.homeTeamForm, teams.home.id);
         const away = calculate(analysisData.awayTeamForm, teams.away.id);
         return { home, away };
-    // CORREÇÃO: A dependência agora é mais específica e correta
     }, [analysisData, teams.home.id, teams.away.id]);
+
+    const powerScores = useMemo(() => {
+        if (!analysisData || !analysisData.homeTeamForm || !analysisData.awayTeamForm) {
+            return { home: 0, away: 0 };
+        }
+        const homeStats = calculateDetailedStats(analysisData.homeTeamForm, fixtureData.teams.home.id);
+        const awayStats = calculateDetailedStats(analysisData.awayTeamForm, fixtureData.teams.away.id);
+
+        return {
+            home: calculatePowerScore(homeStats),
+            away: calculatePowerScore(awayStats)
+        };
+    }, [analysisData, fixtureData.teams]);
     
+    const matchedMethods = useMemo(() => verificarMetodos(analysisData), [analysisData]);
+
     return (
         <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-500">
             <GameHeader fixtureData={fixtureData} analysisData={analysisData} />
             
-            {goalAverages && (
-                <div className="grid grid-cols-2 gap-4 text-center border-y py-3 my-4">
-                    <div>
+            {/* ### LAYOUT ALTERADO AQUI ### */}
+            <div className="grid grid-cols-3 gap-4 text-center border-y py-3 my-4 items-center">
+                {/* Coluna 1: Média do Time da Casa */}
+                {goalAverages && (
+                    <div className="text-center">
                         <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.homeTeamForm.length} Jogos)</p>
-                        <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.home.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.home.conceded.toFixed(2)}</span></p></div>
+                        <div className="mt-2 space-y-1">
+                            <p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.home.scored.toFixed(2)}</span></p>
+                            <p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.home.conceded.toFixed(2)}</span></p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.awayTeamForm.length} Jogos)</p>
-                        <div className="mt-2 space-y-1"><p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.away.scored.toFixed(2)}</span></p><p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.away.conceded.toFixed(2)}</span></p></div>
+                )}
+
+                {/* Coluna 2: TIPSSCORE e os dois índices de força */}
+                <div className="flex flex-col items-center justify-center">
+                    <h4 className="text-sm font-bold text-gray-800 mb-2">TIPSSCORE</h4>
+                    <div className="flex items-center gap-4">
+                        <PowerScoreDisplay score={powerScores.home} />
+                        <PowerScoreDisplay score={powerScores.away} />
                     </div>
                 </div>
-            )}
+
+                {/* Coluna 3: Média do Time Visitante */}
+                {goalAverages && (
+                    <div className="text-center">
+                        <p className="font-bold text-sm text-gray-800">Média (Últimos {analysisData.awayTeamForm.length} Jogos)</p>
+                        <div className="mt-2 space-y-1">
+                            <p className="text-xs text-green-700 font-semibold">⚽ Marcados: <span className="text-base font-bold">{goalAverages.away.scored.toFixed(2)}</span></p>
+                            <p className="text-xs text-red-700 font-semibold">🛡️ Sofridos: <span className="text-base font-bold">{goalAverages.away.conceded.toFixed(2)}</span></p>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {matchedMethods.length > 0 && (
+    matchedMethods.map(methodName => (
+        <div key={methodName} className="my-4 p-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg shadow-md text-center">
+            <p className="font-bold text-lg">Oportunidade Encontrada!</p>
+            <p className="text-sm">Este jogo corresponde aos critérios do método: <strong>{methodName}</strong></p>
+        </div>
+    ))
+)}
 
             <button onClick={() => onOpenModal(fixtureData)} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors mb-4"><BrainCircuit size={20} /> Ver Análise da IA</button>
             
@@ -468,7 +567,7 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
                     </div>
                 )}
                 
-                {activeTab === 'standings' && (pageData.standings && pageData.standings[league.id] ? <table className="w-full text-left text-sm"><thead className="text-xs text-gray-900 uppercase bg-gray-50"><tr><th className="px-2 py-2">#</th><th className="px-2 py-2">Time</th><th className="px-2 py-2">J</th><th className="px-2 py-2">SG</th><th className="px-2 py-2">Pts</th></tr></thead><tbody>{pageData.standings[league.id].map((team: any) => <tr key={team.team.id} className={`border-b ${team.team.id === teams.home.id || team.team.id === teams.away.id ? 'bg-blue-100' : ''}`}><td className="px-2 py-2">{team.rank}</td><td className="px-2 py-2 flex items-center"><Image src={team.team.logo} alt={team.team.name} width={16} height={16} unoptimized className="mr-2" />{team.team.name}</td><td className="px-2 py-2">{team.all.played}</td><td className="px-2 py-2">{team.goalsDiff}</td><td className="px-2 py-2 font-bold">{team.points}</td></tr>)}</tbody></table> : <p className="text-gray-500 text-center text-sm py-2">Classificação não disponível.</p>)}
+                {activeTab === 'standings' && (pageData.standings && pageData.standings[league.id] && pageData.standings[league.id].length > 0 ? ( <table className="w-full text-left text-sm"><thead className="text-xs text-gray-900 uppercase bg-gray-50"><tr><th className="px-2 py-2">#</th><th className="px-2 py-2">Time</th><th className="px-2 py-2">J</th><th className="px-2 py-2">SG</th><th className="px-2 py-2">Pts</th></tr></thead><tbody>{pageData.standings[league.id].map((team: any) => <tr key={team.team.id} className={`border-b ${team.team.id === teams.home.id || team.team.id === teams.away.id ? 'bg-blue-100' : ''}`}><td className="px-2 py-2">{team.rank}</td><td className="px-2 py-2 flex items-center">{team.team.logo ? (<Image src={team.team.logo} alt={team.team.name} width={16} height={16} unoptimized className="mr-2" />) : (<div className="w-4 h-4 mr-2 bg-gray-200 rounded-full flex-shrink-0"></div>)}{team.team.name}</td><td className="px-2 py-2">{team.all.played}</td><td className="px-2 py-2">{team.goalsDiff}</td><td className="px-2 py-2 font-bold">{team.points}</td></tr>)}</tbody></table> ) : ( <p className="text-gray-500 text-center text-sm py-2">A classificação não está disponível para este tipo de campeonato.</p>))}
                 {activeTab === 'lineups' && <LineupsPanel lineupData={analysisData.lineup} />}
                 {activeTab === 'odds' && (<div className="space-y-4"><OddMarket title="Vencedor da Partida" oddsData={analysisData.odds.matchWinner} /><OddMarket title="Mais/Menos" oddsData={analysisData.odds.overUnder_2_5} /></div>)}
                 {activeTab === 'backtest' && (<div className="grid grid-cols-1 md:grid-cols-2 gap-6"><BacktestAnalysisPanel teamForm={analysisData.homeTeamForm} teamId={teams.home.id} teamName={teams.home.name} /><BacktestAnalysisPanel teamForm={analysisData.awayTeamForm} teamId={teams.away.id} teamName={teams.away.name} /></div>)}
@@ -517,12 +616,12 @@ const ColunaFiltros = ({ activeDate, setActiveDate, selectedLeague, setSelectedL
                 </div>
             </div>
              <div className="flex justify-end pt-2 border-t mt-4">
-                <Link href="/scanner">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors flex items-center gap-2">
-                        🔍 Ir para Scanner
-                    </button>
-                </Link>
-            </div>
+                 <Link href="/scanner">
+                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors flex items-center gap-2">
+                         🔍 Ir para Scanner
+                     </button>
+                 </Link>
+             </div>
         </div>
     </div>
     );
@@ -558,79 +657,103 @@ const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
     );
 };
 
-const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin }: any) => {
-    const { teams, fixture } = game;
-
-    const handlePinClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); 
-        onPin();
-    };
-
+// ### NOVO COMPONENTE PARA MOSTRAR O STATUS DA VERIFICAÇÃO ###
+const ScanStatusDisplay = ({ status }: { status: { scanning: boolean, progress: number, total: number } }) => {
+    if (!status.scanning || status.total === 0 || status.progress === status.total) {
+        return null;
+    }
     return (
-        <div 
-            onClick={() => onSelectFixture(fixture.id)} 
-            className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-        >
-            <span className="w-14 text-xs text-gray-700 font-semibold">{new Date(fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-            <div className="flex-1 flex flex-col min-w-0 px-2">
-                <div className="flex items-center gap-2">
-                    
-                    <span className="text-sm text-black truncate">{teams.home.name}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-1">
-                    
-                    <span className="text-sm text-black truncate">{teams.away.name}</span>
-                </div>
+        <div className="p-2 text-center text-sm text-gray-600 bg-blue-100 rounded-lg shadow-md mx-2">
+            <div className="flex items-center justify-center gap-2">
+                <LoaderCircle size={16} className="animate-spin" />
+                <span>Verificando jogos... ({status.progress} / {status.total})</span>
             </div>
-            
-            <button onClick={handlePinClick} className="p-2 rounded-full hover:bg-gray-200">
-                <Star size={16} className={`transition-colors ${isPinned ? 'text-amber-500 fill-amber-400' : 'text-gray-400'}`} />
-            </button>
         </div>
     );
 };
 
-// ### MUDANÇA 2: COLUNAJOGOS AGORA INCLUI OS FILTROS ###
+// ### COMPONENTE ALTERADO: LinhaJogo agora mostra os "selos" ###
+const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin, matches }: { game: any, isSelected: boolean, isPinned: boolean, onSelectFixture: (id: number) => void, onPin: () => void, matches: string[] }) => {
+    const { teams, fixture } = game;
+    const handlePinClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); 
+        onPin();
+    };
+    return (
+        <div onClick={() => onSelectFixture(fixture.id)} className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`} >
+            <span className="w-14 text-xs text-gray-700 font-semibold">{new Date(fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            <div className="flex-1 flex flex-col min-w-0 px-2">
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-black truncate">{teams.home.name}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm text-black truncate">{teams.away.name}</span>
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                {matches && matches.length > 0 && (
+                    <div className="flex flex-col gap-1 items-end">
+                        {matches.map(methodName => (
+                            <span key={methodName} className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">
+                                {methodName.replace('ENTRADA ', '')}
+                            </span>
+                        ))}
+                    </div>
+                )}
+                <button onClick={handlePinClick} className="p-2 rounded-full hover:bg-gray-200">
+                    <Star size={16} className={`transition-colors ${isPinned ? 'text-amber-500 fill-amber-400' : 'text-gray-400'}`} />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// ### COMPONENTE ALTERADO: ColunaJogos agora mostra o status e passa os resultados ###
 const ColunaJogos = ({ 
     groupedFixtures, 
     selectedFixtureId, 
     onSelectFixture, 
     pinnedGameIds, 
     onPinGame,
-    // Novas props para os filtros
     gameCounts,
     statusFilter,
-    onStatusFilterChange
+    onStatusFilterChange,
+    scanStatus,
+    methodMatches, // <-- Prop recebida
 }: any) => {
     return (
-        // A rolagem é controlada por este container
         <div className="space-y-3 h-full overflow-y-auto bg-gray-50 p-2 rounded-lg">
-            {/* Botões de filtro renderizados aqui dentro */}
             <GameStatusFilters
                 counts={gameCounts}
                 activeFilter={statusFilter}
                 onFilterChange={onStatusFilterChange}
             />
+            
+            <ScanStatusDisplay status={scanStatus} />
 
-            {/* Conteúdo original da coluna */}
             {groupedFixtures.length > 0 ? (
-                groupedFixtures.map(([groupName, groupData]: [string, any]) => (
+                groupedFixtures.map(([groupName, groupData]: GameGroup) => (
                     <div key={groupName} className="bg-white rounded-lg shadow-md">
                         <h3 className="text-sm font-bold text-black p-3 border-b flex items-center gap-2">
                             {groupData.games[0]?.league?.logo && (<Image src={groupData.games[0].league.logo} alt={groupName} width={16} height={16} unoptimized/>)}
                             {groupName}
                         </h3>
                         <div className="p-1 space-y-1">
-                            {groupData.games.map((game: any) => (
-                                <LinhaJogo 
-                                    key={game.fixture.id}
-                                    game={game}
-                                    isSelected={selectedFixtureId === game.fixture.id}
-                                    onSelectFixture={onSelectFixture}
-                                    isPinned={pinnedGameIds.includes(game.fixture.id)}
-                                    onPin={() => onPinGame(game.fixture.id)}
-                                />
-                            ))}
+                            {groupData.games.map((game: any) => {
+                                // A lógica para pegar os matches agora funciona
+                                const matches = methodMatches[game.fixture.id] || [];
+                                return (
+                                    <LinhaJogo 
+                                        key={game.fixture.id}
+                                        game={game}
+                                        isSelected={selectedFixtureId === game.fixture.id}
+                                        onSelectFixture={onSelectFixture}
+                                        isPinned={pinnedGameIds.includes(game.fixture.id)}
+                                        onPin={() => onPinGame(game.fixture.id)}
+                                        matches={matches}
+                                    />
+                                );
+                            })}
                         </div>
                     </div>
                 ))
@@ -715,8 +838,11 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     const [selectedFixtureForModal, setSelectedFixtureForModal] = useState<any | null>(null);
     const [pinnedGameIds, setPinnedGameIds] = useState<number[]>([]);
     const [statusFilter, setStatusFilter] = useState<'all' | 'not_started' | 'in_progress' | 'finished'>('all');
-    // NOVO ESTADO: Controla a visão no celular
     const [mobileView, setMobileView] = useState<'list' | 'analysis'>('list');
+
+    // ### NOVOS ESTADOS ADICIONADOS AQUI ###
+    const [methodMatches, setMethodMatches] = useState<Record<string, string[]>>({});
+    const [scanStatus, setScanStatus] = useState({ scanning: false, progress: 0, total: 0 });
 
     useEffect(() => {
         const savedPins = localStorage.getItem('pinnedGameIds');
@@ -879,15 +1005,83 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         return processedGroups;
     }, [baseFilteredGames, statusFilter, groupBy, pinnedGameIds]);
     
-    // **AQUI ESTÁ A CORREÇÃO PRINCIPAL**
-    // 1. A lista `allFixtures` é calculada aqui, no topo, com o tipo correto.
     const allFixtures = useMemo(() => {
         if (!groupedFixtures) return [];
         // Adicionamos o tipo `GameGroup` para ajudar o TypeScript
         return groupedFixtures.flatMap((group: GameGroup) => group[1].games);
     }, [groupedFixtures]);
+
+    // ============================================================================
+    // NOVA FUNÇÃO DE VERIFICAÇÃO SILENCIOSA
+    // ============================================================================
+    useEffect(() => {
+        let isCancelled = false;
+        
+        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     
-    // 2. A função `handleSelectFixture` agora usa a lista já calculada.
+        const runSilentVerification = async () => {
+            setScanStatus({ scanning: true, progress: 0, total: allFixtures.length });
+    
+            let progressCount = 0;
+            for (const game of allFixtures) {
+                if (isCancelled) break;
+    
+                const fixtureId = game.fixture.id;
+                
+                // Pula a busca se os dados já foram buscados e verificados nesta sessão
+                if (methodMatches[fixtureId] || analysisCache[fixtureId]) {
+                     progressCount++;
+                     setScanStatus(prev => ({ ...prev, progress: progressCount }));
+                     
+                     // Garante que a verificação seja executada se os dados estão no cache mas ainda não foram verificados
+                     if (analysisCache[fixtureId] && !methodMatches[fixtureId]) {
+                         const matches = verificarMetodos(analysisCache[fixtureId]);
+                         if (matches.length > 0) {
+                             setMethodMatches(prev => ({ ...prev, [fixtureId]: matches }));
+                         }
+                     }
+                     continue; 
+                }
+    
+                // fetchAnalysis é inteligente e usa o cache, então podemos apenas chamá-lo.
+                const analysisData = await fetchAnalysis(game);
+    
+                if (isCancelled) break;
+    
+                // Verifica os métodos se os dados forem válidos
+                if (analysisData && !analysisData.error) {
+                    const matches = verificarMetodos(analysisData);
+                    if (matches.length > 0) {
+                        // Atualiza o estado imediatamente para mostrar o "selo"
+                        setMethodMatches(prev => ({ ...prev, [fixtureId]: matches }));
+                    }
+                }
+                
+                // Atualiza o progresso após cada jogo ser processado
+                progressCount++;
+                setScanStatus(prev => ({ ...prev, progress: progressCount }));
+    
+                // A pausa para evitar o erro 429
+                await delay(1500); // 1.5 segundos
+            }
+    
+            if (!isCancelled) {
+                 setScanStatus(prev => ({ ...prev, scanning: false }));
+            }
+        };
+    
+        // Inicia o processo apenas se houver jogos na lista
+        if (allFixtures.length > 0) {
+            runSilentVerification();
+        }
+    
+        // Função de limpeza para parar o loop se as dependências mudarem
+        return () => {
+            isCancelled = true;
+        };
+    }, [allFixtures]); // Dependência chave: re-executa quando a lista de jogos muda
+
+
     const handleSelectFixture = (fixtureId: number) => {
         const gameData = allFixtures.find(g => g.fixture.id === fixtureId);
         if (gameData) {
@@ -897,7 +1091,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
         }
     };
 
-    // NOVA FUNÇÃO: Para o botão "Voltar" no celular
     const handleGoBackToList = () => {
         setMobileView('list');
         setSelectedFixtureId(null); // Limpa a seleção para o desktop se a tela for redimensionada
@@ -914,7 +1107,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                 <div className="text-center text-amber-500 p-8">Falha ao carregar dados iniciais ou sem jogos para hoje.</div>
             ) : (
                 <>
-                    {/* LAYOUT PARA DESKTOP (some em telas pequenas) */}
                     <div className="hidden lg:grid lg:grid-cols-[260px_1fr_3fr] gap-2 h-full">
                         <ColunaFiltros
                             activeDate={activeDate}
@@ -937,6 +1129,8 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                             gameCounts={gameCounts}
                             statusFilter={statusFilter}
                             onStatusFilterChange={setStatusFilter}
+                            scanStatus={scanStatus}
+                            methodMatches={methodMatches}
                         />
 
                         <ColunaAnalise
@@ -946,14 +1140,12 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                             loadingFixtureId={loadingFixtureId}
                             pageData={pageData}
                             onOpenModal={handleOpenAnalysisModal}
-                            // A função onGoBack não é necessária aqui, pois o botão estará escondido
+                            onGoBack={handleGoBackToList}
                         />
                     </div>
 
-                    {/* LAYOUT PARA CELULAR (some em telas grandes) */}
                     <div className="lg:hidden h-full">
                         {mobileView === 'list' ? (
-                            // Tela da Lista de Jogos
                             <div className="flex flex-col h-full gap-4 p-2">
                                 <ColunaFiltros
                                     activeDate={activeDate}
@@ -975,10 +1167,11 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                                     gameCounts={gameCounts}
                                     statusFilter={statusFilter}
                                     onStatusFilterChange={setStatusFilter}
+                                    scanStatus={scanStatus}
+                                    methodMatches={methodMatches}
                                 />
                             </div>
                         ) : (
-                            // Tela da Análise do Jogo
                             <ColunaAnalise
                                 selectedFixtureId={selectedFixtureId}
                                 allFixtures={allFixtures}
@@ -986,7 +1179,7 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                                 loadingFixtureId={loadingFixtureId}
                                 pageData={pageData}
                                 onOpenModal={handleOpenAnalysisModal}
-                                onGoBack={handleGoBackToList} // Passa a função para o botão "Voltar"
+                                onGoBack={handleGoBackToList}
                             />
                         )}
                     </div>

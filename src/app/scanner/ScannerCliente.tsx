@@ -416,7 +416,7 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
       awayIPO > homeIPO // ...e o IPO do VISITANTE é maior
     ) {
       return {
-        type: 'Lay Casa (Visitante vistante jogando pior)',
+        type: 'Lay Casa (Visitante vistante jogando melhor)',
         text: 'Casa com posse de bola improdutiva. Visitante cria as melhores chances.',
         color: 'red'
       };
