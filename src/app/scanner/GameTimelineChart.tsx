@@ -42,7 +42,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
         switch (event.type) {
           case 'Goal':
             description = `Gol - ${event.detail || ''}`;
-            markerIcon = <SvgText fontSize="16">⚽</SvgText>;
+            markerIcon = <text fontSize="16">⚽</text>;;
             break;
           case 'Card':
             description = `Cartão ${event.detail === 'Yellow Card' ? 'Amarelo' : 'Vermelho'}`;
@@ -108,7 +108,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
   
   // Dados da Legenda (sem alteração)
   const legendData = [
-    { icon: <SvgText fontSize="12">⚽</SvgText>, label: 'Gol' },
+    { icon: <span className="text-xs">⚽</span>, label: 'Gol' },
     { icon: <div className="w-2 h-3 rounded-sm bg-yellow-400" />, label: 'Cartão' },
     { icon: <Target size={12} className="text-orange-500" />, label: 'Chute no Gol' },
     { icon: <Flag size={12} className="text-blue-500" />, label: 'Escanteio' },
