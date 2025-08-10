@@ -450,7 +450,7 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
             <GameTimelineChart game={game} />
 
             <div className="text-center mt-1">
-                <a href={`https://www.fulltbet.com/buscar?query=${encodeURIComponent(game.teams.home.name + ' vs ' + game.teams.away.name)}`} target="_blank" rel="noopener noreferrer" className="inline-block text-orange-600 text-xs font-medium underline hover:text-green-800 transition">
+                <a href={`https://www.fulltbet.bet.br/buscar?query=${encodeURIComponent(game.teams.home.name + ' vs ' + game.teams.away.name)}`} target="_blank" rel="noopener noreferrer" className="inline-block text-orange-600 text-xs font-medium underline hover:text-green-800 transition">
                     Ver este jogo na Fulltbet →
                 </a>
             </div>
