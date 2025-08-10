@@ -514,7 +514,7 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
 
     const sortedAndFilteredGames = useMemo(() => {
         let games = liveGames;
-        games = games.filter((game: any) => game.statistics && game.statistics.length > 0);
+        //games = games.filter((game: any) => game.statistics && game.statistics.length > 0);
         
         if (selectedLeague !== 'all') {
             games = games.filter((game: any) => game.league.id.toString() === selectedLeague);
@@ -526,13 +526,23 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
                 game.teams.away.name.toLowerCase().includes(lowerCaseQuery)
             );
         }
-        games.sort((a, b) => {
-            const aIsPinned = pinnedGameIds.includes(a.fixture.id);
-            const bIsPinned = pinnedGameIds.includes(b.fixture.id);
-            if (aIsPinned && !bIsPinned) return -1;
-            if (!aIsPinned && bIsPinned) return 1;
-            return b.fixture.status.elapsed - a.fixture.status.elapsed;
-        });
+       games.sort((a, b) => {
+            // 1. Critério de Jogo Fixado (sem alteração)
+            const aIsPinned = pinnedGameIds.includes(a.fixture.id);
+            const bIsPinned = pinnedGameIds.includes(b.fixture.id);
+            if (aIsPinned && !bIsPinned) return -1;
+            if (!aIsPinned && bIsPinned) return 1;
+
+            // 2. Critério de Jogos com estatísticas (sem alteração)
+            const aHasStats = a.statistics && a.statistics.length > 0;
+            const bHasStats = b.statistics && b.statistics.length > 0;
+            if (aHasStats && !bHasStats) return -1;
+            if (!aHasStats && bHasStats) return 1;
+
+            // 3. Critério de Tempo de Jogo (do mais curto para o mais longo)
+            // A ÚNICA MUDANÇA É NESTA LINHA
+            return a.fixture.status.elapsed - b.fixture.status.elapsed;
+        });
         return games;
     }, [liveGames, selectedLeague, pinnedGameIds, searchQuery]);
 
