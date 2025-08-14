@@ -7,468 +7,461 @@ import { motion } from 'framer-motion';
 import { DominanceBar } from './DominanceBar';
 import { GameTimelineChart } from './GameTimelineChart';
 
+// NOVO COMPONENTE SKELETON - Para o estado de carregamento
+const StatsSkeleton = () => (
+    <div className="space-y-1.5 p-1 animate-pulse">
+        {[...Array(7)].map((_, i) => (
+            <div key={i} className="flex justify-between items-center w-full">
+                <div className="h-7 w-12 bg-gray-300 rounded-md"></div>
+                <div className="h-4 w-28 bg-gray-300 rounded-md"></div>
+                <div className="h-7 w-12 bg-gray-300 rounded-md"></div>
+            </div>
+        ))}
+    </div>
+);
+
+
 // --- Componente para a Tabela de Estatísticas Detalhada ---
 const DetailedStats = ({ game, events }: { game: any, events: any[] }) => {
 
-  const homeTeamId = game.teams.home.id;
-  
-  // --- NOVA LÓGICA PARA CONTAR SUBSTITUIÇÕES ---
-  const substitutions = useMemo(() => {
-    let home = 0;
-    let away = 0;
-    if (events && events.length > 0) {
-      events.forEach(event => {
-        if (event.type === 'subst') { // Procura pelo evento de substituição
-          if (event.team.id === homeTeamId) {
-            home++;
-          } else {
-            away++;
-          }
+    const homeTeamId = game.teams.home.id;
+
+    const substitutions = useMemo(() => {
+        let home = 0;
+        let away = 0;
+        if (events && events.length > 0) {
+            events.forEach(event => {
+                if (event.type === 'subst') {
+                    if (event.team.id === homeTeamId) { home++; } 
+                    else { away++; }
+                }
+            });
         }
-      });
-    }
-    return { home, away };
-  }, [events, homeTeamId]);
+        return { home, away };
+    }, [events, homeTeamId]);
 
-  if (!game.statistics || game.statistics.length === 0) {
-    return (
-      <div className="text-center text-xs text-gray-500 py-10">
-        <p>Aguardando estatísticas...</p>
-      </div>
-    );
-  }
+    const awayTeamId = game.teams.away.id;
 
-  const awayTeamId = game.teams.away.id;
-
-  const calculatePressure = (teamId: number) => {
-    if (!events) return 0;
-    return events.reduce((score, event) => {
-      if (event.team.id !== teamId) return score;
-      const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
-      return score + (weights[event.type] || 0);
-    }, 0);
-  };
-
-  const homePressure = calculatePressure(homeTeamId);
-  const awayPressure = calculatePressure(awayTeamId);
-
-
-
-  const getStat = (type: string) => {
-    const homeStats = game.statistics.find((s: any) => s.team.id === homeTeamId)?.statistics;
-    const awayStats = game.statistics.find((s: any) => s.team.id === awayTeamId)?.statistics;
-    const homeStat = homeStats?.find((stat: any) => stat.type === type)?.value ?? 0;
-    const awayStat = awayStats?.find((stat: any) => stat.type === type)?.value ?? 0;
-    const parseValue = (val: any) => {
-      if (typeof val === 'string' && val.includes('%')) {
-        return parseFloat(val.replace('%', ''));
-      }
-      return Number(val);
+    const calculatePressure = (teamId: number) => {
+        if (!events) return 0;
+        return events.reduce((score, event) => {
+            if (event.team.id !== teamId) return score;
+            const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
+            return score + (weights[event.type] || 0);
+        }, 0);
     };
-    return { home: parseValue(homeStat), away: parseValue(awayStat) };
-  };
 
+    const homePressure = calculatePressure(homeTeamId);
+    const awayPressure = calculatePressure(awayTeamId);
 
+    const getStat = (type: string) => {
+        const homeStats = game.statistics.find((s: any) => s.team.id === homeTeamId)?.statistics;
+        const awayStats = game.statistics.find((s: any) => s.team.id === awayTeamId)?.statistics;
+        const homeStat = homeStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+        const awayStat = awayStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+        const parseValue = (val: any) => {
+            if (typeof val === 'string' && val.includes('%')) { return parseFloat(val.replace('%', '')); }
+            return Number(val);
+        };
+        return { home: parseValue(homeStat), away: parseValue(awayStat) };
+    };
+    
+    // LISTA DE STATS ATUALIZADA - Sem "Ataques Perigosos"
+    const statsList = [
+        { label: 'Chutes no Gol', type: 'Shots on Goal', icon: <Target size={14} className="text-gray-500" /> },
+        { label: 'Total de Chutes', type: 'Total Shots', icon: <Zap size={14} className="text-gray-500" /> },
+        { label: 'Escanteios', type: 'Corner Kicks', icon: <Flag size={14} className="text-gray-500" /> },
+        { label: 'Faltas', type: 'Fouls', icon: <Shield size={14} className="text-gray-500" /> },
+        { label: 'Posse de Bola', type: 'Ball Possession', icon: <Shield size={14} className="text-gray-500" /> },
+        { label: 'Substituições', type: 'CustomSubstitutions', icon: <ArrowLeftRight size={14} className="text-gray-700" /> },
+        { label: 'Impedimentos', type: 'Offsides', icon: <AlertCircle size={14} className="text-gray-500" /> },
+        { label: 'Defesas do Goleiro', type: 'Goalkeeper Saves', icon: <Shield size={14} className="text-gray-500" /> },
+        { label: 'Chutes Bloqueados', type: 'Blocked Shots', icon: <Zap size={14} className="text-gray-500" /> },
+    ];
 
-  const statsList = [
-    { label: 'Chutes no Gol', type: 'Shots on Goal', icon: <Target size={14} className="text-gray-500" /> },
-    { label: 'Total de Chutes', type: 'Total Shots', icon: <Zap size={14} className="text-gray-500" /> },
-    { label: 'Ataques Perigosos', type: 'Dangerous Attacks', icon: <ShieldCheck size={14} className="text-gray-500" /> },
-    { label: 'Escanteios', type: 'Corner Kicks', icon: <Flag size={14} className="text-gray-500" /> },
-    { label: 'Faltas', type: 'Fouls', icon: <Shield size={14} className="text-gray-500" /> },
-    { label: 'Posse de Bola', type: 'Ball Possession', icon: <Shield size={14} className="text-gray-500" /> },
-    { label: 'Substituições', type: 'CustomSubstitutions', icon: <ArrowLeftRight size={14} className="text-gray-700" /> },
-    { label: 'Impedimentos', type: 'Offsides', icon: <AlertCircle size={14} className="text-gray-500" /> },
-    { label: 'Defesas do Goleiro', type: 'Goalkeeper Saves', icon: <Shield size={14} className="text-gray-500" /> },
-    { label: 'Chutes Bloqueados', type: 'Blocked Shots', icon: <Zap size={14} className="text-gray-500" /> },
-  ];
+    const yellowCards = getStat('Yellow Cards');
+    const redCards = getStat('Red Cards');
 
-  const yellowCards = getStat('Yellow Cards');
-  const redCards = getStat('Red Cards');
+    return (
+        <div className="space-y-1.5 p-1">
+            <div className="flex justify-between items-center w-full text-xs">
+                <span className={`px-3 py-1.5 rounded-md min-w-[45px] text-center shadow-inner bg-gray-300 text-gray-800 font-bold`}>{homePressure}</span>
+                <span className="text-gray-500 font-semibold px-2 text-center flex items-center gap-1.5"><Gauge size={14} /> Pressão</span>
+                <span className={`px-3 py-1.5 rounded-md min-w-[45px] text-center shadow-inner bg-gray-300 text-gray-800 font-bold`}>{awayPressure}</span>
+            </div>
 
-  return (
-    <div className="space-y-2 text-xs">
-      <div className="flex justify-between items-center">
-        <span className="font-bold text-gray-800 text-[10px]">{homePressure}</span>
-        <span className="flex items-center gap-1.5 text-gray-600 text-[10px]">
-          <Gauge size={14} className="text-gray-500" /> Pressão
-        </span>
-        <span className="font-bold text-gray-800 text-[11px]">{awayPressure}</span>
-      </div>
-      {statsList.map(stat => {
-        // Lógica para decidir qual valor mostrar
-        const homeValue = stat.type === 'CustomSubstitutions' ? substitutions.home : getStat(stat.type).home;
-        const awayValue = stat.type === 'CustomSubstitutions' ? substitutions.away : getStat(stat.type).away;
-
-        return (
-          <div key={stat.type} className="flex justify-between items-center">
-            <span className="font-bold text-gray-800 text-[10px]">{homeValue}</span>
-            <span className="flex items-center gap-1.5 text-gray-600 text-[10px]">{stat.icon} {stat.label}</span>
-            <span className="font-bold text-gray-800 text-[11px]">{awayValue}</span>
-          </div>
-        );
-      })}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-1">
-          <div className="w-2.5 h-3.5 bg-yellow-400 rounded-sm"></div><span className="font-bold">{yellowCards.home}</span>
-          <div className="w-2.5 h-3.5 bg-red-600 rounded-sm ml-1"></div><span className="font-bold">{redCards.home}</span>
+            {statsList.map(stat => {
+                const homeValue = stat.type === 'CustomSubstitutions' ? substitutions.home : getStat(stat.type).home;
+                const awayValue = stat.type === 'CustomSubstitutions' ? substitutions.away : getStat(stat.type).away;
+                const homeBgClass = Number(homeValue) > Number(awayValue) ? "bg-amber-400 font-bold text-gray-900" : "bg-gray-300 text-gray-800";
+                const awayBgClass = Number(awayValue) > Number(homeValue) ? "bg-amber-400 font-bold text-gray-900" : "bg-gray-300 text-gray-800";
+                
+                return (
+                    <div key={stat.type} className="flex justify-between items-center w-full text-xs">
+                        <span className={`px-3 py-1.5 rounded-md min-w-[45px] text-center shadow-inner ${homeBgClass}`}>{homeValue}</span>
+                        <span className="text-gray-500 font-semibold px-2 text-center">{stat.label}</span>
+                        <span className={`px-3 py-1.5 rounded-md min-w-[45px] text-center shadow-inner ${awayBgClass}`}>{awayValue}</span>
+                    </div>
+                );
+            })}
+            
+            <div className="flex justify-between items-center w-full text-xs pt-2">
+                <div className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-4 bg-yellow-400 rounded-sm"></div>
+                    <span className="font-bold text-gray-800">{yellowCards.home}</span>
+                    <div className="w-2.5 h-4 bg-red-600 rounded-sm ml-1"></div>
+                    <span className="font-bold text-gray-800">{redCards.home}</span>
+                </div>
+                <span className="text-gray-500 font-semibold">Cartões</span>
+                <div className="flex items-center gap-1.5">
+                    <span className="font-bold text-gray-800">{yellowCards.away}</span>
+                    <div className="w-2.5 h-4 bg-yellow-400 rounded-sm"></div>
+                    <span className="font-bold text-gray-800">{redCards.away}</span>
+                    <div className="w-2.5 h-4 bg-red-600 rounded-sm ml-1"></div>
+                </div>
+            </div>
         </div>
-        <span className="text-gray-600">Cartões</span>
-        <div className="flex items-center gap-1">
-          <span className="font-bold">{yellowCards.away}</span><div className="w-2.5 h-3.5 bg-yellow-400 rounded-sm"></div>
-          <span className="font-bold">{redCards.away}</span><div className="w-2.5 h-3.5 bg-red-600 rounded-sm ml-1"></div>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
+
 
 // --- Componente Card de Jogo ---
 const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean, onPin: () => void }) => {
 
-  // Função principal getStat (declarada uma única vez)
-  const getStat = (type: string) => {
-    const homeTeamStats = game.statistics.find((s: any) => s.team.id === game.teams.home.id)?.statistics;
-    const awayTeamStats = game.statistics.find((s: any) => s.team.id === game.teams.away.id)?.statistics;
-    const homeStat = homeTeamStats?.find((stat: any) => stat.type === type)?.value ?? 0;
-    const awayStat = awayTeamStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+    const getStat = (type: string) => {
+        const homeTeamStats = game.statistics.find((s: any) => s.team.id === game.teams.home.id)?.statistics;
+        const awayTeamStats = game.statistics.find((s: any) => s.team.id === game.teams.away.id)?.statistics;
+        const homeStat = homeTeamStats?.find((stat: any) => stat.type === type)?.value ?? 0;
+        const awayStat = awayTeamStats?.find((stat: any) => stat.type === type)?.value ?? 0;
 
-    if (typeof homeStat === 'string' && homeStat.includes('%')) {
-      return { home: parseFloat(homeStat.replace('%', '')), away: parseFloat(awayStat.replace('%', '')) };
-    }
-    return { home: Number(homeStat), away: Number(awayStat) };
-  };
-
-  // Sua função original de Análise do Jogo (completa e corrigida para usar o getStat principal)
-  const getGameConditions = (game: any) => {
-    // A declaração duplicada de getStat foi removida daqui.
-    const homeDanger = getStat('Dangerous Attacks').home;
-    const awayDanger = getStat('Dangerous Attacks').away;
-    const homeShots = getStat('Shots on Goal').home;
-    const awayShots = getStat('Shots on Goal').away;
-    const homeCorners = getStat('Corner Kicks').home;
-    const awayCorners = getStat('Corner Kicks').away;
-    const homePossession = getStat('Ball Possession').home;
-    const awayPossession = getStat('Ball Possession').away;
-    const homeFouls = getStat('Fouls').home;
-    const awayFouls = getStat('Fouls').away;
-    const homeYellow = getStat('Yellow Cards').home;
-    const awayYellow = getStat('Yellow Cards').away;
-    const homeRed = getStat('Red Cards').home;
-    const awayRed = getStat('Red Cards').away;
-    const homeGoals = game.goals.home;
-    const awayGoals = game.goals.away;
-
-    let conditions: string[] = [];
-
-    // Posse de bola
-    if (homePossession > 60) {
-      conditions.push(`Time da casa domina a posse de bola (${homePossession}%).`);
-    } else if (awayPossession > 60) {
-      conditions.push(`Time visitante domina a posse de bola (${awayPossession}%).`);
-    } else {
-      conditions.push(`Posse de bola equilibrada.`);
-    }
-
-    // Ataques perigosos
-    if (homeDanger > awayDanger) {
-      conditions.push(`Mais ataques perigosos para a casa.`);
-    } else if (awayDanger > homeDanger) {
-      conditions.push(`Mais ataques perigosos para o visitante.`);
-    } else {
-      conditions.push(`Ataques perigosos equilibrados.`);
-    }
-
-    // Finalizações
-    if (homeShots > awayShots) {
-      conditions.push(`Casa finalizou mais a gol.`);
-    } else if (awayShots > homeShots) {
-      conditions.push(`Visitante finalizou mais a gol.`);
-    } else {
-      conditions.push(`Finalizações equilibradas.`);
-    }
-
-    // Escanteios
-    if (homeCorners > awayCorners) {
-      conditions.push(`Casa tem mais escanteios.`);
-    } else if (awayCorners > homeCorners) {
-      conditions.push(`Visitante tem mais escanteios.`);
-    } else {
-      conditions.push(`Escanteios equilibrados.`);
-    }
-
-    // Cartões
-    if (homeYellow > awayYellow) {
-      conditions.push(`Mais cartões amarelos para a casa.`);
-    } else if (awayYellow > homeYellow) {
-      conditions.push(`Mais cartões amarelos para o visitante.`);
-    }
-
-    if (homeRed > awayRed) {
-      conditions.push(`Casa com mais cartões vermelhos.`);
-    } else if (awayRed > homeRed) {
-      conditions.push(`Visitante com mais cartões vermelhos.`);
-    }
-
-    // Faltas
-    if (homeFouls > awayFouls) {
-      conditions.push(`Casa com mais faltas.`);
-    } else if (awayFouls > homeFouls) {
-      conditions.push(`Visitante com mais faltas.`);
-    }
-
-    // Placar
-    if (homeGoals > awayGoals) {
-      conditions.push(`Casa vencendo por ${homeGoals} a ${awayGoals}.`);
-    } else if (awayGoals > homeGoals) {
-      conditions.push(`Visitante vencendo por ${awayGoals} a ${homeGoals}.`);
-    } else {
-      conditions.push(`Placar empatado em ${homeGoals} a ${awayGoals}.`);
-    }
-
-    // Sugestões de entrada (palpites)
-    if (homeDanger > awayDanger && homePossession > 55) {
-      conditions.push(`Sugestão: Back na equipe da casa devido ao domínio ofensivo.`);
-    } else if (awayDanger > homeDanger && awayPossession > 55) {
-      conditions.push(`Sugestão: Back na equipe visitante por superioridade ofensiva.`);
-    } else if (homeGoals === awayGoals && (homeShots + awayShots) > 15) {
-      conditions.push(`Sugestão: jogo aberto com chances para ambos os lados, Over 2.5 gols.`);
-    } else {
-      conditions.push(`Jogo equilibrado, sem indicação clara.`);
-    }
-
-    return conditions.join(' ');
-  };
-
-  // Sua função original de Alerta de Momentum
-  const getMomentumSignal = () => {
-    const events = game.events || [];
-    const homeId = game.teams.home.id;
-    const currentMinute = game.fixture.status.elapsed;
-    let recentHomeEvents = 0;
-    let recentAwayEvents = 0;
-
-    for (let i = currentMinute - 5; i <= currentMinute; i++) {
-      events.forEach(event => {
-        if (event.time.elapsed === i && ['Dangerous Attack', 'Shot on Goal', 'Goal'].includes(event.type)) {
-          if (event.team.id === homeId) recentHomeEvents++;
-          else recentAwayEvents++;
+        if (typeof homeStat === 'string' && homeStat.includes('%')) {
+            return { home: parseFloat(homeStat.replace('%', '')), away: parseFloat(awayStat.replace('%', '')) };
         }
-      });
-    }
-    const totalGoals = game.goals.home + game.goals.away;
-    if (recentHomeEvents >= 6 && totalGoals === 0) {
-      return `⚠️ Pressão forte da casa sem gol recente. Over 0.5 pode ser considerado.`;
-    } else if (recentAwayEvents >= 6 && totalGoals === 0) {
-      return `⚠️ Pressão forte do visitante sem gol recente. Over 0.5 pode ser considerado.`;
-    } else if (recentHomeEvents >= 6) {
-      return `🔥 Casa pressionando muito nos últimos 5 minutos.`;
-    } else if (recentAwayEvents >= 6) {
-      return `🔥 Visitante pressionando muito nos últimos 5 minutos.`;
-    }
-    return null;
-  };
-
-
-  // --- MOTOR DE ALERTAS ---
-  const calculatePressure = (teamId: number) => {
-    if (!game.events) return 0;
-    return game.events.reduce((score, event) => {
-      if (event.team.id !== teamId) return score;
-      const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
-      return score + (weights[event.type] || 0);
-    }, 0);
-  };
-
-  const generateBettingAlerts = () => {
-    if (!game.statistics || game.statistics.length === 0) return null;
-    const stats = {
-      homeShotsOnGoal: getStat('Shots on Goal').home,
-      awayShotsOnGoal: getStat('Shots on Goal').away,
-      homeTotalShots: getStat('Total Shots').home,
-      awayTotalShots: getStat('Total Shots').away,
-      homeBlockedShots: getStat('Blocked Shots').home,
-      awayBlockedShots: getStat('Blocked Shots').away,
-      homeCorners: getStat('Corner Kicks').home,
-      awayCorners: getStat('Corner Kicks').away,
-      homePossession: getStat('Ball Possession').home,
-      awayPossession: getStat('Ball Possession').away,
-      homeGoalkeeperSaves: getStat('Goalkeeper Saves').home,
-      awayGoalkeeperSaves: getStat('Goalkeeper Saves').away,
-      homePressure: calculatePressure(game.teams.home.id),
-      awayPressure: calculatePressure(game.teams.away.id),
+        return { home: Number(homeStat), away: Number(awayStat) };
     };
-    const homeIPO = (stats.homeShotsOnGoal * 3) + (stats.homeCorners * 1.5) + (stats.homeTotalShots * 1);
-    const awayIPO = (stats.awayShotsOnGoal * 3) + (stats.awayCorners * 1.5) + (stats.awayTotalShots * 1);
-    const elapsed = game.fixture.status.elapsed;
-    const totalGoals = game.goals.home + game.goals.away;
 
-    // --- PASSO 2: Cálculo da Dominância (a mesma lógica da DominanceBar) ---
-    const homeDominanceScore = (stats.homeShotsOnGoal * 2) + (stats.homeCorners * 1.5) + stats.homeTotalShots;
-    const awayDominanceScore = (stats.awayShotsOnGoal * 2) + (stats.awayCorners * 1.5) + stats.awayTotalShots;
-    const totalDominance = homeDominanceScore + awayDominanceScore;
+    const getGameConditions = (game: any) => {
+        const homeDanger = getStat('Dangerous Attacks').home;
+        const awayDanger = getStat('Dangerous Attacks').away;
+        const homeShots = getStat('Shots on Goal').home;
+        const awayShots = getStat('Shots on Goal').away;
+        const homeCorners = getStat('Corner Kicks').home;
+        const awayCorners = getStat('Corner Kicks').away;
+        const homePossession = getStat('Ball Possession').home;
+        const awayPossession = getStat('Ball Possession').away;
+        const homeFouls = getStat('Fouls').home;
+        const awayFouls = getStat('Fouls').away;
+        const homeYellow = getStat('Yellow Cards').home;
+        const awayYellow = getStat('Yellow Cards').away;
+        const homeRed = getStat('Red Cards').home;
+        const awayRed = getStat('Red Cards').away;
+        const homeGoals = game.goals.home;
+        const awayGoals = game.goals.away;
 
-    const homeDominancePercentage = totalDominance > 0 ? (homeDominanceScore / totalDominance) * 100 : 50;
-    const awayDominancePercentage = totalDominance > 0 ? (awayDominanceScore / totalDominance) * 100 : 50;
+        let conditions: string[] = [];
+
+        if (homePossession > 60) {
+            conditions.push(`Time da casa domina a posse de bola (${homePossession}%).`);
+        } else if (awayPossession > 60) {
+            conditions.push(`Time visitante domina a posse de bola (${awayPossession}%).`);
+        } else {
+            conditions.push(`Posse de bola equilibrada.`);
+        }
+
+        if (homeDanger > awayDanger) {
+            conditions.push(`Mais ataques perigosos para a casa.`);
+        } else if (awayDanger > homeDanger) {
+            conditions.push(`Mais ataques perigosos para o visitante.`);
+        } else {
+            conditions.push(`Ataques perigosos equilibrados.`);
+        }
+
+        if (homeShots > awayShots) {
+            conditions.push(`Casa finalizou mais a gol.`);
+        } else if (awayShots > homeShots) {
+            conditions.push(`Visitante finalizou mais a gol.`);
+        } else {
+            conditions.push(`Finalizações equilibradas.`);
+        }
+
+        if (homeCorners > awayCorners) {
+            conditions.push(`Casa tem mais escanteios.`);
+        } else if (awayCorners > homeCorners) {
+            conditions.push(`Visitante tem mais escanteios.`);
+        } else {
+            conditions.push(`Escanteios equilibrados.`);
+        }
+
+        if (homeYellow > awayYellow) {
+            conditions.push(`Mais cartões amarelos para a casa.`);
+        } else if (awayYellow > homeYellow) {
+            conditions.push(`Mais cartões amarelos para o visitante.`);
+        }
+
+        if (homeRed > awayRed) {
+            conditions.push(`Casa com mais cartões vermelhos.`);
+        } else if (awayRed > homeRed) {
+            conditions.push(`Visitante com mais cartões vermelhos.`);
+        }
+
+        if (homeFouls > awayFouls) {
+            conditions.push(`Casa com mais faltas.`);
+        } else if (awayFouls > homeFouls) {
+            conditions.push(`Visitante com mais faltas.`);
+        }
+
+        if (homeGoals > awayGoals) {
+            conditions.push(`Casa vencendo por ${homeGoals} a ${awayGoals}.`);
+        } else if (awayGoals > homeGoals) {
+            conditions.push(`Visitante vencendo por ${awayGoals} a ${homeGoals}.`);
+        } else {
+            conditions.push(`Placar empatado em ${homeGoals} a ${awayGoals}.`);
+        }
+
+        if (homeDanger > awayDanger && homePossession > 55) {
+            conditions.push(`Sugestão: Back na equipe da casa devido ao domínio ofensivo.`);
+        } else if (awayDanger > homeDanger && awayPossession > 55) {
+            conditions.push(`Sugestão: Back na equipe visitante por superioridade ofensiva.`);
+        } else if (homeGoals === awayGoals && (homeShots + awayShots) > 15) {
+            conditions.push(`Sugestão: jogo aberto com chances para ambos os lados, Over 2.5 gols.`);
+        } else {
+            conditions.push(`Jogo equilibrado, sem indicação clara.`);
+        }
+
+        return conditions.join(' ');
+    };
+
+    const getMomentumSignal = () => {
+        const events = game.events || [];
+        const homeId = game.teams.home.id;
+        const currentMinute = game.fixture.status.elapsed;
+        let recentHomeEvents = 0;
+        let recentAwayEvents = 0;
+
+        for (let i = currentMinute - 5; i <= currentMinute; i++) {
+            events.forEach(event => {
+                if (event.time.elapsed === i && ['Dangerous Attack', 'Shot on Goal', 'Goal'].includes(event.type)) {
+                    if (event.team.id === homeId) recentHomeEvents++;
+                    else recentAwayEvents++;
+                }
+            });
+        }
+        const totalGoals = game.goals.home + game.goals.away;
+        if (recentHomeEvents >= 6 && totalGoals === 0) {
+            return `⚠️ Pressão forte da casa sem gol recente. Over 0.5 pode ser considerado.`;
+        } else if (recentAwayEvents >= 6 && totalGoals === 0) {
+            return `⚠️ Pressão forte do visitante sem gol recente. Over 0.5 pode ser considerado.`;
+        } else if (recentHomeEvents >= 6) {
+            return `🔥 Casa pressionando muito nos últimos 5 minutos.`;
+        } else if (recentAwayEvents >= 6) {
+            return `🔥 Visitante pressionando muito nos últimos 5 minutos.`;
+        }
+        return null;
+    };
 
 
-    // --- PASSO 3: Execução da Nova Regra ---
+    const calculatePressure = (teamId: number) => {
+        if (!game.events) return 0;
+        return game.events.reduce((score, event) => {
+            if (event.team.id !== teamId) return score;
+            const weights = { 'Goal': 5, 'Shot on Goal': 3, 'Dangerous Attack': 2, 'Attack': 1, 'Corner': 1 };
+            return score + (weights[event.type] || 0);
+        }, 0);
+    };
 
-    // REGRA: Back Casa (Domínio em Jogo Empatado)
-    if (
-      elapsed >= 10 && elapsed <= 60 && // Condição de tempo ajustada
-      game.goals.home === game.goals.away && // Condição de placar ajustada para EMPATE
-      homeIPO > (awayIPO * 1.5) && // Pressão IPO da casa é 2.5x maior
-      stats.homeTotalShots > (stats.awayTotalShots * 2) && // Volume de chutes é 3x maior
-      stats.homeShotsOnGoal >= 4 && // Pelo menos 4 chutes no gol
-      stats.homeCorners > (stats.awayCorners + 2) // Pelo menos 3 escanteios a mais
-    ) {
-      return {
-        type: 'Back Casa (Domínio total)',
-        text: `Jogo empatado, mas a casa domina completamente as ações ofensivas.`,
-        color: 'green'
-      };
-    }
+    const generateBettingAlerts = () => {
+        if (!game.statistics || game.statistics.length === 0) return null;
+        const stats = {
+            homeShotsOnGoal: getStat('Shots on Goal').home,
+            awayShotsOnGoal: getStat('Shots on Goal').away,
+            homeTotalShots: getStat('Total Shots').home,
+            awayTotalShots: getStat('Total Shots').away,
+            homeBlockedShots: getStat('Blocked Shots').home,
+            awayBlockedShots: getStat('Blocked Shots').away,
+            homeCorners: getStat('Corner Kicks').home,
+            awayCorners: getStat('Corner Kicks').away,
+            homePossession: getStat('Ball Possession').home,
+            awayPossession: getStat('Ball Possession').away,
+            homeGoalkeeperSaves: getStat('Goalkeeper Saves').home,
+            awayGoalkeeperSaves: getStat('Goalkeeper Saves').away,
+            homePressure: calculatePressure(game.teams.home.id),
+            awayPressure: calculatePressure(game.teams.away.id),
+        };
+        const homeIPO = (stats.homeShotsOnGoal * 3) + (stats.homeCorners * 1.5) + (stats.homeTotalShots * 1);
+        const awayIPO = (stats.awayShotsOnGoal * 3) + (stats.awayCorners * 1.5) + (stats.awayTotalShots * 1);
+        const elapsed = game.fixture.status.elapsed;
+        const totalGoals = game.goals.home + game.goals.away;
 
-    // REGRA: Over 0.5 HT (Baseado em Volume Ofensivo de ambos)
-    if (
-      elapsed < 25 &&
-      stats.homeTotalShots === 4 &&
-      stats.homeShotsOnGoal >= 2 &&
-      stats.awayShotsOnGoal === 2 &&
-      homeDominancePercentage > 55 &&
-      awayDominancePercentage < 45
-    ) {
-      return {
-        type: 'Entrada Over 0.5 HT',
-        text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
-        color: 'green'
-      };
-    }
-    
-    // REGRA: Lay 0x1 FT (Baseado em Volume Ofensivo)
-    if (
-      elapsed < 25 &&
-      stats.homeShotsOnGoal >= 2 &&
-      stats.awayShotsOnGoal === 0 &&
-      homeDominancePercentage > 65 &&
-      awayDominancePercentage < 35
-    ) {
-      return {
-        type: 'Entrada Lay 0x1 FT - casa com pressão forte',
-        text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
-        color: 'green'
-      };
-    }
+        const homeDominanceScore = (stats.homeShotsOnGoal * 2) + (stats.homeCorners * 1.5) + stats.homeTotalShots;
+        const awayDominanceScore = (stats.awayShotsOnGoal * 2) + (stats.awayCorners * 1.5) + stats.awayTotalShots;
+        const totalDominance = homeDominanceScore + awayDominanceScore;
 
-    // REGRA: Over 2.5 FT (Baseado em Volume Ofensivo)
-    if (
-      elapsed > 15 && elapsed <= 30 &&// A regra começa a valer após os 20 minutos
-      (stats.homeTotalShots + stats.awayTotalShots) >= 14 && // Pelo menos 14 chutes totais no jogo
-      ((stats.homeShotsOnGoal >= 3 && stats.awayShotsOnGoal >= 2) || (stats.homeShotsOnGoal >= 2 && stats.awayShotsOnGoal >= 3)) && // Pelo menos 5 chutes no gol combinados, com ambos os times participando
-      (stats.homePossession > 35 && stats.awayPossession > 35) // Evita jogos de "ataque contra defesa" onde só um time joga
-    ) {
-      return {
-        type: 'Over 2.5 FT (Jogo Aberto)',
-        text: 'Partida com alto volume de chutes e chances para ambos os lados. Tendência de gols.',
-        color: 'blue'
-      };
-    }
+        const homeDominancePercentage = totalDominance > 0 ? (homeDominanceScore / totalDominance) * 100 : 50;
+        const awayDominancePercentage = totalDominance > 0 ? (awayDominanceScore / totalDominance) * 100 : 50;
 
-    // REGRA: Over 1.5 FT (Explosão Ofensiva Mútua)
-    if (
-      elapsed >= 10 && elapsed <= 30 && // Janela de tempo
-      totalGoals <= 0 && // O jogo tem 0 gol
-      (stats.homeTotalShots + stats.awayTotalShots) >= 8 && // Pelo menos 8 chutes totais
-      (stats.homeShotsOnGoal + stats.awayShotsOnGoal) >= 2 && // Pelo menos 2 chutes no gol
-      stats.homeCorners >= 2 && stats.awayCorners >= 1 && // Pelo menos 1 escanteios para cada lado
-      (homeIPO + awayIPO) > 40 // O índice de pressão combinado dos dois times é alto
-    ) {
-      return {
-        type: 'Over 1.5 FT (Jogo Aberto)',
-        text: 'Ambas as equipes estão finalizando e criando chances. Alta probabilidade de mais gols.',
-        color: 'blue'
-      };
-    }
 
-    // REGRA: Ambas Marcam (BTTS) em Jogo Aberto
-    if (
-      elapsed >= 1 && elapsed <= 20 && // Janela de tempo
-      totalGoals === 0 && // Apenas em jogos 0x0
-      (stats.homeShotsOnGoal >= 1 && stats.awayShotsOnGoal >= 1) && // AMBOS os times com chute no gol
-      (stats.homeTotalShots + stats.awayTotalShots) >= 5 && // Pelo menos 5 chutes totais no jogo
-      (homeIPO + awayIPO) > 20 // O índice de pressão combinado dos dois times é alto
-    ) {
-      return {
-        type: 'Ambas Marcam (Jogo Aberto)',
-        text: 'Jogo 0x0, mas com os dois times finalizando e criando chances. Tendência para gols de ambos os lados.',
-        color: 'blue'
-      };
-    }
+        if (
+            elapsed >= 10 && elapsed <= 60 && 
+            game.goals.home === game.goals.away && 
+            homeIPO > (awayIPO * 1.5) && 
+            stats.homeTotalShots > (stats.awayTotalShots * 2) && 
+            stats.homeShotsOnGoal >= 4 && 
+            stats.homeCorners > (stats.awayCorners + 2) 
+        ) {
+            return {
+                type: 'Back Casa (Domínio total)',
+                text: `Jogo empatado, mas a casa domina completamente as ações ofensivas.`,
+                color: 'green'
+            };
+        }
 
-    // REGRA: Lay Casa (Favorito Apático)
-    if (
-      elapsed > 15 && elapsed < 60 && // Jogo já estabelecido
-      game.goals.home === game.goals.away && // Jogo empatado
-      stats.homePossession > 55 && // Casa tem a posse de bola...
-      stats.awayTotalShots > stats.homeTotalShots && // ...mas o VISITANTE chuta mais
-      stats.awayShotsOnGoal > stats.homeShotsOnGoal && // ...e o VISITANTE acerta mais o alvo
-      awayIPO > homeIPO // ...e o IPO do VISITANTE é maior
-    ) {
-      return {
-        type: 'Lay Casa (Visitante vistante jogando melhor)',
-        text: 'Casa com posse de bola improdutiva. Visitante cria as melhores chances.',
-        color: 'red'
-      };
-    }
-    // Adicione suas outras regras aqui...
+        if (
+            elapsed < 25 &&
+            stats.homeTotalShots === 4 &&
+            stats.homeShotsOnGoal >= 2 &&
+            stats.awayShotsOnGoal === 2 &&
+            homeDominancePercentage > 55 &&
+            awayDominancePercentage < 45
+        ) {
+            return {
+                type: 'Entrada Over 0.5 HT',
+                text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
+                color: 'green'
+            };
+        }
+        
+        if (
+            elapsed < 25 &&
+            stats.homeShotsOnGoal >= 2 &&
+            stats.awayShotsOnGoal === 0 &&
+            homeDominancePercentage > 65 &&
+            awayDominancePercentage < 35
+        ) {
+            return {
+                type: 'Entrada Lay 0x1 FT - casa com pressão forte',
+                text: `Pressão casa e domínio de ${homeDominancePercentage.toFixed(0)}%, enquanto visitante tem 0 chutes no gol.`,
+                color: 'green'
+            };
+        }
 
-    return null; // Se nenhuma regra for atendida
-  };
+        if (
+            elapsed > 15 && elapsed <= 30 &&
+            (stats.homeTotalShots + stats.awayTotalShots) >= 14 && 
+            ((stats.homeShotsOnGoal >= 3 && stats.awayShotsOnGoal >= 2) || (stats.homeShotsOnGoal >= 2 && stats.awayShotsOnGoal >= 3)) && 
+            (stats.homePossession > 35 && stats.awayPossession > 35) 
+        ) {
+            return {
+                type: 'Over 2.5 FT (Jogo Aberto)',
+                text: 'Partida com alto volume de chutes e chances para ambos os lados. Tendência de gols.',
+                color: 'blue'
+            };
+        }
 
-  // --- LÓGICA DE RENDERIZAÇÃO ---
- const hasStats = game.statistics && game.statistics.length > 0;
-    const customAlert = generateBettingAlerts();
-    const momentumSignalText = getMomentumSignal();
+        if (
+            elapsed >= 10 && elapsed <= 30 && 
+            totalGoals <= 0 && 
+            (stats.homeTotalShots + stats.awayTotalShots) >= 8 && 
+            (stats.homeShotsOnGoal + stats.awayShotsOnGoal) >= 2 && 
+            stats.homeCorners >= 2 && stats.awayCorners >= 1 && 
+            (homeIPO + awayIPO) > 40 
+        ) {
+            return {
+                type: 'Over 1.5 FT (Jogo Aberto)',
+                text: 'Ambas as equipes estão finalizando e criando chances. Alta probabilidade de mais gols.',
+                color: 'blue'
+            };
+        }
+
+        if (
+            elapsed >= 1 && elapsed <= 20 && 
+            totalGoals === 0 && 
+            (stats.homeShotsOnGoal >= 1 && stats.awayShotsOnGoal >= 1) && 
+            (stats.homeTotalShots + stats.awayTotalShots) >= 5 && 
+            (homeIPO + awayIPO) > 20 
+        ) {
+            return {
+                type: 'Ambas Marcam (Jogo Aberto)',
+                text: 'Jogo 0x0, mas com os dois times finalizando e criando chances. Tendência para gols de ambos os lados.',
+                color: 'blue'
+            };
+        }
+
+        if (
+            elapsed > 15 && elapsed < 60 && 
+            game.goals.home === game.goals.away && 
+            stats.homePossession > 55 && 
+            stats.awayTotalShots > stats.homeTotalShots && 
+            stats.awayShotsOnGoal > stats.homeShotsOnGoal && 
+            awayIPO > homeIPO 
+        ) {
+            return {
+                type: 'Lay Casa (Visitante vistante jogando melhor)',
+                text: 'Casa com posse de bola improdutiva. Visitante cria as melhores chances.',
+                color: 'red'
+            };
+        }
+
+        return null;
+    };
+
+    const hasStats = game.statistics && game.statistics.length > 0 && game.statistics.some((s:any) => s.statistics.length > 0);
+    const customAlert = hasStats ? generateBettingAlerts() : null;
+    const momentumSignalText = hasStats ? getMomentumSignal() : null;
+    const analysisText = hasStats ? getGameConditions(game) : "Aguardando dados da partida para gerar análise.";
 
     return (
-        <div className={`bg-white text-gray-800 rounded-lg p-2 flex flex-col space-y-2 shadow-lg border-2 ${isPinned ? 'border-amber-400' : 'border-gray-200'}`}>
+        <div className={`bg-white text-gray-800 rounded-xl p-3 flex flex-col space-y-3 shadow-lg border-2 ${isPinned ? 'border-amber-400 shadow-amber-200/50' : 'border-gray-200'}`}>
+            
             <div className="flex items-center justify-between text-xs text-gray-500">
-                <div className="flex items-center gap-1.5 truncate"><Image src={game.league.logo} alt={game.league.name} width={14} height={14} /> <span className="truncate text-gray-700 text-[11px]">{game.league.name}</span></div>
+                <div className="flex items-center gap-1.5 truncate">
+                    <Image src={game.league.logo} alt={game.league.name} width={14} height={14} /> 
+                    <span className="truncate text-gray-700 text-sm font-semibold">{game.league.name}</span>
+                </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={onPin} title="Fixar/Desafixar Jogo"><Star className={`w-4 h-4 transition-colors ${isPinned ? 'fill-amber-400 text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} /></button>
-                    <span className="font-bold text-red-500 animate-pulse bg-red-100 px-1.5 py-0.5 rounded-md text-[11px]">{game.fixture.status.elapsed}&apos;</span>
+                    <button onClick={onPin} title="Fixar/Desafixar Jogo">
+                        <Star className={`w-5 h-5 transition-colors ${isPinned ? 'fill-amber-400 text-amber-500' : 'text-gray-400 hover:text-amber-400'}`} />
+                    </button>
+                    <span className="font-mono font-bold text-red-500 animate-pulse bg-red-100 px-2 py-1 rounded-md text-sm">{game.fixture.status.elapsed}&apos;</span>
                 </div>
             </div>
+            
             <div className="flex items-center justify-between">
-                <div className="flex-1 text-center"><Image src={game.teams.home.logo} alt={game.teams.home.name} width={28} height={28} className="mx-auto mb-1" /><p className="font-semibold text-[11px] text-gray-800 truncate">{game.teams.home.name}</p></div>
-                <div className="text-2xl font-bold text-gray-900 px-1">{game.goals.home} - {game.goals.away}</div>
-                <div className="flex-1 text-center"><Image src={game.teams.away.logo} alt={game.teams.away.name} width={28} height={28} className="mx-auto mb-1" /><p className="font-semibold text-[11px] text-gray-800 truncate">{game.teams.away.name}</p></div>
+                <div className="flex-1 text-center">
+                    <Image src={game.teams.home.logo} alt={game.teams.home.name} width={32} height={32} className="mx-auto mb-1" />
+                    <p className="font-bold text-sm text-gray-800 truncate">{game.teams.home.name}</p>
+                </div>
+                <div className="text-3xl font-bold text-gray-900 px-2">{game.goals.home} - {game.goals.away}</div>
+                <div className="flex-1 text-center">
+                    <Image src={game.teams.away.logo} alt={game.teams.away.name} width={32} height={32} className="mx-auto mb-1" />
+                    <p className="font-bold text-sm text-gray-800 truncate">{game.teams.away.name}</p>
+                </div>
             </div>
 
             {hasStats && <DominanceBar game={game} />}
             <GameTimelineChart game={game} />
 
-            <div className="text-center mt-1">
-                <a href={`https://www.fulltbet.bet.br/buscar?query=${encodeURIComponent(game.teams.home.name + ' vs ' + game.teams.away.name)}`} target="_blank" rel="noopener noreferrer" className="inline-block text-orange-600 text-xs font-medium underline hover:text-green-800 transition">
-                    Ver este jogo na Fulltbet →
+            <div className="flex items-center gap-2 pt-1">
+                <a href={`https://www.fulltbet.bet.br/buscar?query=${encodeURIComponent(game.teams.home.name + ' vs ' + game.teams.away.name)}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-amber-500 text-white text-xs font-bold py-2.5 rounded-md shadow-md hover:bg-amber-600 transition tracking-wider">
+                    ‹FULLTBET›
+                </a>
+                <a href="https://fulltbet.bet.br/tradeball/liveTradingFeed" target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-gray-800 text-white text-xs font-bold py-2.5 rounded-md shadow-md hover:bg-gray-900 transition tracking-wider">
+                    ‹TRADEBALL›
                 </a>
             </div>
             
-            {hasStats && (
-                <div className="bg-blue-50 border border-blue-200 p-2 rounded-lg flex flex-col gap-1 text-xs text-blue-800">
-                    <BrainCircuit className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                    <p><span className="font-bold">Análise do Jogo:</span></p>
-                    <p>{getGameConditions(game)}</p>
-                </div>
-            )}
+            <div className="bg-blue-50 border border-blue-200 p-2 rounded-lg flex flex-col gap-1 text-xs text-blue-800">
+                <BrainCircuit className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <p><span className="font-bold">Análise do Jogo:</span></p>
+                <p>{analysisText}</p>
+            </div>
+
             {hasStats && momentumSignalText && (
                 <div className="bg-yellow-50 border border-yellow-300 p-2 rounded-lg flex items-center gap-2">
                     <Zap className="w-5 h-5 text-yellow-500 flex-shrink-0" />
                     <p className="text-xs text-yellow-800"><span className="font-bold">Alerta de Entrada:</span> {momentumSignalText}</p>
                 </div>
             )}
-            {customAlert && (
+            {hasStats && customAlert && (
                 <div className={`border p-2 rounded-lg flex items-center gap-2 bg-${customAlert.color}-50 border-${customAlert.color}-200`}>
                     <Zap className={`w-5 h-5 text-${customAlert.color}-500 flex-shrink-0`} />
                     <div className="text-xs">
@@ -478,14 +471,15 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
                 </div>
             )}
             
-            <div className="bg-gray-100 p-2 rounded-lg">
-                {hasStats ? <DetailedStats game={game} events={game.events} /> : (<p className="text-center text-xs text-gray-500 py-10">Aguardando estatísticas...</p>)}
+            <div className="bg-gray-100 p-1.5 rounded-lg border border-gray-200 min-h-[220px]">
+                {hasStats ? <DetailedStats game={game} events={game.events} /> : <StatsSkeleton />}
             </div>
         </div>
     );
 };
 
-  // --- Componente Principal ---
+
+// --- Componente Principal ---
 export default function ScannerCliente({ initialData }: { initialData: any }) {
     const [liveGames, setLiveGames] = useState(initialData?.liveGames || []);
     const [selectedLeague, setSelectedLeague] = useState('all');
@@ -514,8 +508,6 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
 
     const sortedAndFilteredGames = useMemo(() => {
         let games = liveGames;
-        //games = games.filter((game: any) => game.statistics && game.statistics.length > 0);
-        
         if (selectedLeague !== 'all') {
             games = games.filter((game: any) => game.league.id.toString() === selectedLeague);
         }
@@ -526,23 +518,17 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
                 game.teams.away.name.toLowerCase().includes(lowerCaseQuery)
             );
         }
-       games.sort((a, b) => {
-            // 1. Critério de Jogo Fixado (sem alteração)
-            const aIsPinned = pinnedGameIds.includes(a.fixture.id);
-            const bIsPinned = pinnedGameIds.includes(b.fixture.id);
-            if (aIsPinned && !bIsPinned) return -1;
-            if (!aIsPinned && bIsPinned) return 1;
-
-            // 2. Critério de Jogos com estatísticas (sem alteração)
-            const aHasStats = a.statistics && a.statistics.length > 0;
-            const bHasStats = b.statistics && b.statistics.length > 0;
-            if (aHasStats && !bHasStats) return -1;
-            if (!aHasStats && bHasStats) return 1;
-
-            // 3. Critério de Tempo de Jogo (do mais curto para o mais longo)
-            // A ÚNICA MUDANÇA É NESTA LINHA
-            return a.fixture.status.elapsed - b.fixture.status.elapsed;
-        });
+        games.sort((a, b) => {
+            const aIsPinned = pinnedGameIds.includes(a.fixture.id);
+            const bIsPinned = pinnedGameIds.includes(b.fixture.id);
+            if (aIsPinned && !bIsPinned) return -1;
+            if (!aIsPinned && bIsPinned) return 1;
+            const aHasStats = a.statistics && a.statistics.length > 0;
+            const bHasStats = b.statistics && b.statistics.length > 0;
+            if (aHasStats && !bHasStats) return -1;
+            if (!aHasStats && bHasStats) return 1;
+            return a.fixture.status.elapsed - b.fixture.status.elapsed;
+        });
         return games;
     }, [liveGames, selectedLeague, pinnedGameIds, searchQuery]);
 
@@ -572,21 +558,20 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
         );
     }
 
-     return (
+    return (
         <div className="space-y-6">
-          <div className="flex justify-start gap-4">
-            <Link href="/">
-                <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
-                    <Home size={18} /> Ir para a Página Principal
-                </button>
-            </Link>
-
-            <Link href="/jogos-do-dia">
-                <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
-                    <BookOpen size={18} /> Análise de jogos
-                </button>
-            </Link>
-        </div>
+            <div className="flex justify-start gap-4">
+                <Link href="/">
+                    <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
+                        <Home size={18} /> Ir para a Página Principal
+                    </button>
+                </Link>
+                <Link href="/jogos-do-dia">
+                    <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
+                        <BookOpen size={18} /> Análise de jogos
+                    </button>
+                </Link>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white rounded-lg shadow-md">
                 <div>
                     <label htmlFor="league-filter" className="text-sm font-medium text-gray-700">Filtrar por Campeonato:</label>
