@@ -559,8 +559,8 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-start gap-4">
+        <div className="space-y-4">
+            <div className="flex justify-start gap-6">
                 <Link href="/">
                     <button className="flex items-center gap-2 bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition">
                         <Home size={18} /> Ir para a Página Principal
