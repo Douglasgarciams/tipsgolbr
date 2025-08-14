@@ -74,7 +74,7 @@ export const GameTimelineChart = ({ game }: { game: any }) => {
                             <Icon className={`${color} w-5 h-5 bg-gray-800 rounded-full p-0.5 border-2 border-gray-500 cursor-pointer`} />
                             {/* Tooltip com a informação do evento */}
                             <div className="absolute bottom-full mb-2 w-max max-w-xs px-3 py-1.5 bg-gray-900 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -translate-x-1/2 left-1/2">
-                                {label} aos {event.time.elapsed}'
+                                {label} aos {event.time.elapsed}&apos;
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
                             </div>
                         </motion.div>
