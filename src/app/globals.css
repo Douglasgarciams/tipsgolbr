@@ -1,4 +1,7 @@
-/* src/app/globals.css - VERSÃO FINAL E CORRIGIDA */
+/* src/app/globals.css */
+
+/* Importa a fonte Poppins do Google Fonts com pesos 700 e 800 */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&display=swap');
 
 @import "tailwindcss";
 
@@ -22,48 +25,75 @@
 }
 
 body {
-  /* REMOVIDO: background: var(--background); */
-  /* REMOVIDO: color: var(--foreground); */
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Regra para a página de login - CORRIGIDA AQUI! */
+/* Regra para a página de login */
 .login-background {
-  position: relative; /* Essencial para o ::before */
-  overflow: hidden;   /* Para que o blur não vaze para fora */
+  position: relative;
+  overflow: hidden;
 }
 .login-background::before {
-  content: ""; /* Essencial para que pseudo-elementos apareçam */
-  position: absolute; /* Posição absoluta para cobrir o pai */
+  content: "";
+  position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  z-index: -1; /* Coloca o pseudo-elemento atrás do conteúdo */
-
-  background-image: url('/images/fundologin.jpg'); /* Sua imagem de fundo */
+  z-index: -1;
+  background-image: url('/images/fundologin.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(3px); /* O desfoque aplicado SOMENTE À IMAGEM DE FUNDO */
-  -webkit-filter: blur(3px); /* Compatibilidade */
+  filter: blur(3px);
+  -webkit-filter: blur(3px);
 }
 
-/* Regra para a página de cadastro - CORRIGIDA AQUI! */
+/* Regra para a página de cadastro */
 .cadastro-background {
-  position: relative; /* Essencial para o ::before */
-  overflow: hidden;   /* Para que o blur não vaze para fora */
+  position: relative;
+  overflow: hidden;
 }
 .cadastro-background::before {
-  content: ""; /* Essencial para que pseudo-elementos apareçam */
-  position: absolute; /* Posição absoluta para cobrir o pai */
+  content: "";
+  position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  z-index: -1; /* Coloca o pseudo-elemento atrás do conteúdo */
-
-  background-image: url('/images/cadastro.jpg'); /* Sua imagem de fundo */
+  z-index: -1;
+  background-image: url('/images/cadastro.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(3px); /* O desfoque aplicado SOMENTE À IMAGEM DE FUNDO */
-  -webkit-filter: blur(3px); /* Compatibilidade */
+  filter: blur(3px);
+  -webkit-filter: blur(3px);
 }
+
 html, body, #__next {
   overflow: visible !important;
+}
+
+/* =============================================== */
+/* ESTILO PARA O FUNDO DA PÁGINA DO SCANNER       */
+/* =============================================== */
+
+.scanner-page-background {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* =============================================== */
+/* TÍTULO ATUALIZADO - IMAGEM, GROSSO E COM SOMBRA */
+/* =============================================== */
+.scanner-title {
+  font-family: 'Poppins', sans-serif; /* Fonte moderna e grossa */
+  font-weight: 800;
+  letter-spacing: -0.05em;
+
+  /* Efeito de imagem no texto */
+  background-image: url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Sombra atrás das letras para destacar */
+  filter: drop-shadow(0px 3px 5px rgba(0, 0, 0, 0.15));
 }

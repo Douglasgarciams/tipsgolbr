@@ -38,13 +38,17 @@ export default async function ScannerPage() {
     );
   }
 
+  // O return foi atualizado para usar a nova classe de fundo e organizar o layout.
   return (
-    <div className="min-h-screen bg-blue-600 text-gray-800 font-sans p-4 md:p-7">
-      <div className="w-full max-w-none"> {/* Ocupa a largura total */}
-        <h1 className="text-4xl font-bold text-white text-center text-1000 mb-6">Scanner Tips</h1>
-        {/* O componente do cliente (do seu Canvas) é renderizado aqui */}
+    // A classe `scanner-page-background` continua aqui para aplicarmos o novo fundo.
+    <main className="scanner-page-background">
+      {/* O div interno agora não tem mais limite de largura, ocupando toda a tela.
+          Mantemos o padding para que o conteúdo não cole nas bordas. */}
+      <div className="w-full p-4 md:p-6">
+        <h1 className="scanner-title text-5xl tracking-tight text-center mb-6 drop-shadow-md">Scanner Tips</h1>
+        {/* O componente do cliente é renderizado aqui */}
         <ScannerCliente initialData={initialData} />
       </div>
-    </div>
+    </main>
   );
 }
