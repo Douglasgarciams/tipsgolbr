@@ -15,75 +15,6 @@ const ALLOWED_LEAGUE_IDS = [
     2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 255, 256, 257, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 304, 328, 329, 334, 345, 346, 347, 358, 366, 367, 392, 489, 78, 473, 474, 491, 501, 503, 523, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 770, 772, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
 ];
 
-// 1. Função que calcula todas as estatísticas que seus métodos podem precisar
-const calculateAllStatsForMethods = (teamId: number, teamForm: any[]) => {
-    if (!teamForm || teamForm.length === 0) return {};
-    const numGames = teamForm.length;
-    let stats = {
-        htGoalScored: 0,
-        ftGoalScored: 0,
-        htGoalConceded: 0,
-        ftGoalConceded: 0,
-        winsAtHome: 0,
-        totalHomeGames: 0,
-        over2_5: 0,
-    };
-    teamForm.forEach(game => {
-        const isThisTeamHome = game.teams.home.id === teamId;
-        const scored = isThisTeamHome ? game.goals.home : game.goals.away;
-        const conceded = isThisTeamHome ? game.goals.away : game.goals.home;
-        const htScored = isThisTeamHome ? game.score.halftime.home : game.score.halftime.away;
-        const htConceded = isThisTeamHome ? game.score.halftime.away : game.score.halftime.home;
-        const totalGoals = game.goals.home + game.goals.away;
-        if (htScored > 0) stats.htGoalScored++;
-        if (scored > 0) stats.ftGoalScored++;
-        if (htConceded > 0) stats.htGoalConceded++;
-        if (conceded > 0) stats.ftGoalConceded++;
-        if (totalGoals > 2.5) stats.over2_5++;
-        if (isThisTeamHome) {
-            stats.totalHomeGames++;
-            if (scored > conceded) stats.winsAtHome++;
-        }
-    });
-    const toPercent = (value: number, total = numGames) => (total === 0 ? 0 : Math.round((value / total) * 100));
-    return {
-        marcouGolHTPercent: toPercent(stats.htGoalScored),
-        marcouGolFTPercent: toPercent(stats.ftGoalScored),
-        sofreuGolHTPercent: toPercent(stats.htGoalConceded),
-        sofreuGolFTPercent: toPercent(stats.ftGoalConceded),
-        homeWinPercent: toPercent(stats.winsAtHome, stats.totalHomeGames),
-        over2_5FTPercent: toPercent(stats.over2_5),
-    };
-};
-
-// 2. Array com a definição de todos os seus métodos
-const metodos = [
-    { name: 'ENTRADA LAY 0X1', checker: (homeStats: any, awayStats: any, odds: any) => { const homeScoredHT = (homeStats.marcouGolHTPercent || 0) >= 60; const homeScoredFT = (homeStats.marcouGolFTPercent || 0) >= 80; const awayConcededHT = (awayStats.sofreuGolHTPercent || 0) >= 30; const awayConcededFT = (awayStats.sofreuGolFTPercent || 0) >= 60; const oddsCondition = odds.home <= odds.away; return homeScoredHT && homeScoredFT && awayConcededHT && awayConcededFT && oddsCondition; } },
-    { name: 'ENTRADA LAY 0X3', checker: (homeStats: any, awayStats: any, odds: any) => { const homeScoredHT = (homeStats.marcouGolHTPercent || 0) >= 50; const homeScoredFT = (homeStats.marcouGolFTPercent || 0) >= 80; const awayConcededFT = (awayStats.sofreuGolFTPercent || 0) >= 60; const oddsCondition = odds.home > 2.00 && odds.away > 2.80; const homeWinPercent = (homeStats.homeWinPercent || 0) >= 50; return homeScoredHT && homeScoredFT && awayConcededFT && oddsCondition && homeWinPercent; } },
-    { name: 'ENTRADA LAY 2x2', checker: (homeStats: any, awayStats: any, odds: any) => { if (!odds.home) return false; const homeOddCondition = odds.home <= 1.40; const over25Condition = (homeStats.over2_5FTPercent || 0) >= 50; return homeOddCondition && over25Condition; } },
-];
-
-// 3. Função central que verifica todos os métodos de uma vez
-const verificarMetodos = (analysisData: any) => {
-    if (!analysisData || !analysisData.parameters || !analysisData.odds?.matchWinner || !analysisData.homeTeamForm || !analysisData.awayTeamForm) { return []; }
-    const homeId = parseInt(analysisData.parameters.homeTeamId);
-    const awayId = parseInt(analysisData.parameters.awayTeamId);
-    const homeStats = calculateAllStatsForMethods(homeId, analysisData.homeTeamForm);
-    const awayStats = calculateAllStatsForMethods(awayId, analysisData.awayTeamForm);
-    const oddsValues = analysisData.odds.matchWinner?.bookmakers[0]?.bets[0]?.values;
-    if (!oddsValues) return [];
-    const homeOddValue = oddsValues.find((o: any) => o.value === 'Home')?.odd;
-    const awayOddValue = oddsValues.find((o: any) => o.value === 'Away')?.odd;
-    if (!homeOddValue || !awayOddValue) return [];
-    const odds = { home: parseFloat(homeOddValue), away: parseFloat(awayOddValue) };
-    const matchedMethods = [];
-    for (const metodo of metodos) {
-        if (metodo.checker(homeStats, awayStats, odds)) {
-            matchedMethods.push(metodo.name);
-        }
-    }
-    return matchedMethods;
-};
 
 const calculateDetailedStats = (teamForm: any[], teamId: number) => {
     if (!teamForm || teamForm.length === 0) return {};
@@ -413,10 +344,10 @@ const GameHeader = ({ fixtureData, analysisData }: any) => {
                 <div className="px-2">{isNotStarted ? (<div className="text-2xl font-bold text-gray-700">{formattedTime}</div>) : (<div className="text-4xl font-bold text-black">{fullTimeScore}</div>)}<p className="text-xs text-green-600 mt-1">{isNotStarted ? formattedDate : `${fixture.status.long} ${halfTimeScore}`}</p></div>
                 <div className="flex flex-col items-center"><Image src={teams.away.logo} alt={teams.away.name} width={56} height={56} className="h-14 w-14 object-contain" unoptimized /><h3 className="font-bold text-black mt-2 text-base">{teams.away.name}</h3></div>
             </div>
-            <div className="grid grid-cols-3 gap-2 mt-4 text-center bg-blue-200 p-2 rounded-lg">
-                <div><p className="text-xs text-green-700">Casa</p><p className="font-bold text-black text-sm">{homeOdd}</p></div>
-                <div><p className="text-xs text-gray-900">Empate</p><p className="font-bold text-black text-sm">{drawOdd}</p></div>
-                <div><p className="text-xs text-red-500">Fora</p><p className="font-bold text-black text-sm">{awayOdd}</p></div>
+                <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+                <div className="bg-white p-2 rounded-lg shadow-md border"><p className="text-xs text-green-700">Casa</p><p className="font-bold text-black text-sm">{homeOdd}</p></div>
+                <div className="bg-white p-2 rounded-lg shadow-md border"><p className="text-xs text-gray-900">Empate</p><p className="font-bold text-black text-sm">{drawOdd}</p></div>
+                <div className="bg-white p-2 rounded-lg shadow-md border"><p className="text-xs text-red-500">Fora</p><p className="font-bold text-black text-sm">{awayOdd}</p></div>
             </div>
             <div className="mt-4"><a href={fullTBetURL} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors shadow-sm"><ExternalLink size={16} /> Procurar Jogo na FullTBet</a></div>
         </div>
@@ -474,13 +405,11 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
         };
     }, [analysisData, fixtureData.teams]);
     
-    const matchedMethods = useMemo(() => verificarMetodos(analysisData), [analysisData]);
-
     return (
-        <div className="bg-white p-4 rounded-b-lg text-black border-t-2 border-blue-500">
+        // 👇 A MUDANÇA ESTÁ NESTA LINHA 👇
+        <div className="bg-white p-4 rounded-lg text-black border-2 border-blue-500">
             <GameHeader fixtureData={fixtureData} analysisData={analysisData} />
             
-            {/* ### LAYOUT ALTERADO AQUI ### */}
             <div className="grid grid-cols-3 gap-4 text-center border-y py-3 my-4 items-center">
                 {/* Coluna 1: Média do Time da Casa */}
                 {goalAverages && (
@@ -514,16 +443,14 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
                 )}
             </div>
 
-            {matchedMethods.length > 0 && (
-    matchedMethods.map(methodName => (
-        <div key={methodName} className="my-4 p-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-lg shadow-md text-center">
-            <p className="font-bold text-lg">Oportunidade Encontrada!</p>
-            <p className="text-sm">Este jogo corresponde aos critérios do método: <strong>{methodName}</strong></p>
-        </div>
-    ))
-)}
-
             <button onClick={() => onOpenModal(fixtureData)} className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors mb-4"><BrainCircuit size={20} /> Ver Análise da IA</button>
+            
+            <Link 
+                href={`/confronto?fixtureId=${fixtureData.fixture.id}`}
+                className="w-full bg-gray-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-900 transition-colors mb-4"
+>
+        ⚔️ Ver Diagnóstico do Confronto
+            </Link>
             
             <div className="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
                 <ul className="flex flex-wrap -mb-px">
@@ -582,7 +509,8 @@ const AnalysisPanel = ({ fixtureData, analysisData, pageData, onOpenModal }: any
 
 const ColunaFiltros = ({ activeDate, setActiveDate, selectedLeague, setSelectedLeague, searchQuery, setSearchQuery, uniqueLeagues, groupBy, setGroupBy }: any) => {
     return (
-        <div className="bg-white p-4 rounded-lg shadow-md h-full overflow-y-auto">
+        // 👇 A MUDANÇA ESTÁ NESTA LINHA 👇
+        <div className="bg-white p-4 rounded-lg shadow-md h-full overflow-y-auto border-2 border-blue-500">
             <div className="space-y-4">
                 <div>
                     <label className="text-sm font-bold text-black">Data</label>
@@ -615,19 +543,18 @@ const ColunaFiltros = ({ activeDate, setActiveDate, selectedLeague, setSelectedL
                     </div>
                 </div>
             </div>
-             <div className="flex justify-end pt-2 border-t mt-4">
-                 <Link href="/scanner">
-                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors flex items-center gap-2">
-                         🔍 Ir para Scanner
-                     </button>
-                 </Link>
-             </div>
+               <div className="flex justify-end pt-2 border-t mt-4">
+                   <Link href="/scanner">
+                        <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors flex items-center gap-2">
+                            🔍 Ir para Scanner
+                        </button>
+                   </Link>
+               </div>
         </div>
     </div>
     );
 };
 
-// ### MUDANÇA 1: NOVO COMPONENTE PARA OS BOTÕES DE FILTRO ###
 const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
     const filters = [
         { key: 'all', label: 'Todos' },
@@ -657,50 +584,26 @@ const GameStatusFilters = ({ counts, activeFilter, onFilterChange }: any) => {
     );
 };
 
-// ### NOVO COMPONENTE PARA MOSTRAR O STATUS DA VERIFICAÇÃO ###
-const ScanStatusDisplay = ({ status }: { status: { scanning: boolean, progress: number, total: number } }) => {
-    if (!status.scanning || status.total === 0 || status.progress === status.total) {
-        return null;
-    }
-    return (
-        <div className="p-2 text-center text-sm text-gray-600 bg-blue-100 rounded-lg shadow-md mx-2">
-            <div className="flex items-center justify-center gap-2">
-                <LoaderCircle size={16} className="animate-spin" />
-                <span>Verificando jogos... ({status.progress} / {status.total})</span>
-            </div>
-        </div>
-    );
-};
-
-// ### COMPONENTE ALTERADO: LinhaJogo agora mostra os "selos" ###
-const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin, matches }: { game: any, isSelected: boolean, isPinned: boolean, onSelectFixture: (id: number) => void, onPin: () => void, matches: string[] }) => {
+const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin }: { game: any, isSelected: boolean, isPinned: boolean, onSelectFixture: (id: number) => void, onPin: () => void }) => {
     const { teams, fixture } = game;
     const handlePinClick = (e: React.MouseEvent) => {
         e.stopPropagation(); 
         onPin();
     };
     return (
-        <div onClick={() => onSelectFixture(fixture.id)} className={`flex items-center p-2 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`} >
-            <span className="w-14 text-xs text-gray-700 font-semibold">{new Date(fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        // 👇 A classe do div principal foi alterada aqui 👇
+        <div onClick={() => onSelectFixture(fixture.id)} className={`flex items-center p-3 my-2 bg-white rounded-lg shadow-md cursor-pointer transition-all duration-200 ${isSelected ? 'ring-2 ring-blue-500' : 'hover:shadow-lg hover:scale-[1.02]'}`} >
+            <span className="w-14 text-sm text-gray-700 font-semibold">{new Date(fixture.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
             <div className="flex-1 flex flex-col min-w-0 px-2">
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-black truncate">{teams.home.name}</span>
+                    <span className="text-sm font-semibold text-gray-800 truncate">{teams.home.name}</span>
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm text-black truncate">{teams.away.name}</span>
+                    <span className="text-sm font-semibold text-gray-800 truncate">{teams.away.name}</span>
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                {matches && matches.length > 0 && (
-                    <div className="flex flex-col gap-1 items-end">
-                        {matches.map(methodName => (
-                            <span key={methodName} className="text-xs font-bold bg-green-500 text-white px-2 py-0.5 rounded-full">
-                                {methodName.replace('ENTRADA ', '')}
-                            </span>
-                        ))}
-                    </div>
-                )}
-                <button onClick={handlePinClick} className="p-2 rounded-full hover:bg-gray-200">
+                <button onClick={handlePinClick} className="p-2 rounded-full hover:bg-gray-200 transition-colors">
                     <Star size={16} className={`transition-colors ${isPinned ? 'text-amber-500 fill-amber-400' : 'text-gray-400'}`} />
                 </button>
             </div>
@@ -708,7 +611,6 @@ const LinhaJogo = ({ game, isSelected, isPinned, onSelectFixture, onPin, matches
     );
 };
 
-// ### COMPONENTE ALTERADO: ColunaJogos agora mostra o status e passa os resultados ###
 const ColunaJogos = ({ 
     groupedFixtures, 
     selectedFixtureId, 
@@ -718,30 +620,33 @@ const ColunaJogos = ({
     gameCounts,
     statusFilter,
     onStatusFilterChange,
-    scanStatus,
-    methodMatches, // <-- Prop recebida
 }: any) => {
     return (
-        <div className="space-y-3 h-full overflow-y-auto bg-gray-50 p-2 rounded-lg">
+        // 👇 A MUDANÇA ESTÁ NESTA LINHA 👇
+        <div className="space-y-3 h-full overflow-y-auto bg-white p-4 rounded-lg border-2 border-blue-500">
             <GameStatusFilters
                 counts={gameCounts}
                 activeFilter={statusFilter}
                 onFilterChange={onStatusFilterChange}
             />
             
-            <ScanStatusDisplay status={scanStatus} />
-
             {groupedFixtures.length > 0 ? (
                 groupedFixtures.map(([groupName, groupData]: GameGroup) => (
                     <div key={groupName} className="bg-white rounded-lg shadow-md">
                         <h3 className="text-sm font-bold text-black p-3 border-b flex items-center gap-2">
                             {groupData.games[0]?.league?.logo && (<Image src={groupData.games[0].league.logo} alt={groupName} width={16} height={16} unoptimized/>)}
-                            {groupName}
+                            <span>
+                                {groupName} 
+                                {groupData.games[0]?.league?.country && (
+                                    <span className="text-gray-500 font-normal ml-2">
+                                        ({groupData.games[0].league.country})
+                                    </span>
+                                )}
+                            </span>
                         </h3>
+
                         <div className="p-1 space-y-1">
                             {groupData.games.map((game: any) => {
-                                // A lógica para pegar os matches agora funciona
-                                const matches = methodMatches[game.fixture.id] || [];
                                 return (
                                     <LinhaJogo 
                                         key={game.fixture.id}
@@ -750,7 +655,6 @@ const ColunaJogos = ({
                                         onSelectFixture={onSelectFixture}
                                         isPinned={pinnedGameIds.includes(game.fixture.id)}
                                         onPin={() => onPinGame(game.fixture.id)}
-                                        matches={matches}
                                     />
                                 );
                             })}
@@ -767,7 +671,6 @@ const ColunaJogos = ({
 };
 
 const ColunaAnalise = ({ selectedFixtureId, allFixtures, analysisCache, loadingFixtureId, pageData, onOpenModal, onGoBack }: any) => {
-    // Adicionamos o botão de Voltar que só aparece em telas pequenas (lg:hidden)
     const BackButton = () => (
         <div className="p-4 lg:hidden">
             <button 
@@ -781,7 +684,6 @@ const ColunaAnalise = ({ selectedFixtureId, allFixtures, analysisCache, loadingF
     );
 
     if (!selectedFixtureId) {
-        // No desktop, mostra o painel para selecionar um jogo
         return (
             <div className="hidden lg:flex bg-white rounded-lg shadow-md h-full items-center justify-center text-center p-4 sticky top-6">
                 <div>
@@ -839,10 +741,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     const [pinnedGameIds, setPinnedGameIds] = useState<number[]>([]);
     const [statusFilter, setStatusFilter] = useState<'all' | 'not_started' | 'in_progress' | 'finished'>('all');
     const [mobileView, setMobileView] = useState<'list' | 'analysis'>('list');
-
-    // ### NOVOS ESTADOS ADICIONADOS AQUI ###
-    const [methodMatches, setMethodMatches] = useState<Record<string, string[]>>({});
-    const [scanStatus, setScanStatus] = useState({ scanning: false, progress: 0, total: 0 });
 
     useEffect(() => {
         const savedPins = localStorage.getItem('pinnedGameIds');
@@ -1007,80 +905,22 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
     
     const allFixtures = useMemo(() => {
         if (!groupedFixtures) return [];
-        // Adicionamos o tipo `GameGroup` para ajudar o TypeScript
         return groupedFixtures.flatMap((group: GameGroup) => group[1].games);
     }, [groupedFixtures]);
 
-    // ============================================================================
-    // NOVA FUNÇÃO DE VERIFICAÇÃO SILENCIOSA
-    // ============================================================================
     useEffect(() => {
-        let isCancelled = false;
-        
-        const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    
-        const runSilentVerification = async () => {
-            setScanStatus({ scanning: true, progress: 0, total: allFixtures.length });
-    
-            let progressCount = 0;
-            for (const game of allFixtures) {
-                if (isCancelled) break;
-    
-                const fixtureId = game.fixture.id;
-                
-                // Pula a busca se os dados já foram buscados e verificados nesta sessão
-                if (methodMatches[fixtureId] || analysisCache[fixtureId]) {
-                     progressCount++;
-                     setScanStatus(prev => ({ ...prev, progress: progressCount }));
-                     
-                     // Garante que a verificação seja executada se os dados estão no cache mas ainda não foram verificados
-                     if (analysisCache[fixtureId] && !methodMatches[fixtureId]) {
-                         const matches = verificarMetodos(analysisCache[fixtureId]);
-                         if (matches.length > 0) {
-                             setMethodMatches(prev => ({ ...prev, [fixtureId]: matches }));
-                         }
-                     }
-                     continue; 
-                }
-    
-                // fetchAnalysis é inteligente e usa o cache, então podemos apenas chamá-lo.
-                const analysisData = await fetchAnalysis(game);
-    
-                if (isCancelled) break;
-    
-                // Verifica os métodos se os dados forem válidos
-                if (analysisData && !analysisData.error) {
-                    const matches = verificarMetodos(analysisData);
-                    if (matches.length > 0) {
-                        // Atualiza o estado imediatamente para mostrar o "selo"
-                        setMethodMatches(prev => ({ ...prev, [fixtureId]: matches }));
-                    }
-                }
-                
-                // Atualiza o progresso após cada jogo ser processado
-                progressCount++;
-                setScanStatus(prev => ({ ...prev, progress: progressCount }));
-    
-                // A pausa para evitar o erro 429
-                await delay(1500); // 1.5 segundos
-            }
-    
-            if (!isCancelled) {
-                 setScanStatus(prev => ({ ...prev, scanning: false }));
-            }
-        };
-    
-        // Inicia o processo apenas se houver jogos na lista
-        if (allFixtures.length > 0) {
-            runSilentVerification();
-        }
-    
-        // Função de limpeza para parar o loop se as dependências mudarem
-        return () => {
-            isCancelled = true;
-        };
-    }, [allFixtures]); // Dependência chave: re-executa quando a lista de jogos muda
+        if (!selectedFixtureId) return;
 
+        const isSelectedGameInList = allFixtures.some(g => g.fixture.id === selectedFixtureId);
+
+        if (!isSelectedGameInList) {
+            setSelectedFixtureId(null);
+            
+            if (mobileView === 'analysis') {
+                setMobileView('list');
+            }
+        }
+    }, [allFixtures, selectedFixtureId, mobileView]);
 
     const handleSelectFixture = (fixtureId: number) => {
         const gameData = allFixtures.find(g => g.fixture.id === fixtureId);
@@ -1129,8 +969,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                             gameCounts={gameCounts}
                             statusFilter={statusFilter}
                             onStatusFilterChange={setStatusFilter}
-                            scanStatus={scanStatus}
-                            methodMatches={methodMatches}
                         />
 
                         <ColunaAnalise
@@ -1167,8 +1005,6 @@ export default function JogosCliente({ initialData }: { initialData: any }) {
                                     gameCounts={gameCounts}
                                     statusFilter={statusFilter}
                                     onStatusFilterChange={setStatusFilter}
-                                    scanStatus={scanStatus}
-                                    methodMatches={methodMatches}
                                 />
                             </div>
                         ) : (

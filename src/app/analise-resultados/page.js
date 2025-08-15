@@ -15,6 +15,8 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 // Imports de Ícones
 import { Wallet, TrendingUp, CircleDollarSign, AlertCircle, ChevronLeft, ChevronRight, Download } from 'lucide-react';
@@ -31,11 +33,48 @@ ChartJS.register(
   Filler
 );
 
+// --- Componente do Menu de Navegação ---
+const NavigationMenu = () => {
+  const pathname = usePathname(); // Hook para saber a URL atual
+
+  const links = [
+    { href: "/meus-resultados", label: "Meus Resultados", color: "bg-green-600 hover:bg-green-700" },
+    { href: "/aulas", label: "Aulas", color: "bg-purple-600 hover:bg-purple-700" },
+    { href: "/calculadora", label: "Calculadora", color: "bg-blue-600 hover:bg-blue-700" },
+    { href: "/jogos-do-dia", label: "Análise Jogos", color: "bg-sky-600 hover:bg-sky-700" },
+    { href: "/scanner", label: "Scanner", color: "bg-red-600 hover:bg-red-700" },
+  ];
+
+  return (
+    <nav className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
+        {links.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`
+                inline-block text-white font-bold py-2 px-5 rounded-md transition-colors shadow-md
+                ${link.color} 
+                ${isActive ? 'ring-2 ring-offset-2 ring-yellow-400' : 'hover:scale-105'}
+              `}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
+
+
 // --- Componente do Modal de Detalhes (para o Calendário) ---
 const ModalDetalhesAposta = ({ dia, apostasDoDia, onClose }) => {
   if (!apostasDoDia) return null;
 
-  const dataFormatada = new Date(dia).toLocaleDateString('pt-BR', {
+  const dataFormatada = new Date(`${dia}T00:00:00`).toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -125,8 +164,14 @@ export default function AnaliseResultados() {
   const dadosPorDia = useMemo(() => {
     const apostas = chartData.data?.apostas;
     if (!apostas) return {};
+
     return apostas.reduce((acc, aposta) => {
-      const dia = aposta.data.split('T')[0];
+      const dataLocal = new Date(aposta.data);
+      const ano = dataLocal.getFullYear();
+      const mes = String(dataLocal.getMonth() + 1).padStart(2, '0');
+      const diaNum = String(dataLocal.getDate()).padStart(2, '0');
+      const dia = `${ano}-${mes}-${diaNum}`;
+
       if (!acc[dia]) { acc[dia] = { pnlTotal: 0, totalApostas: 0, apostas: [], stakeTotal: 0 }; }
       
       acc[dia].pnlTotal += parseFloat(aposta.resultadoPNL || 0);
@@ -260,6 +305,8 @@ export default function AnaliseResultados() {
     <div className="min-h-screen bg-gray-50 text-gray-800 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
+        <NavigationMenu />
+        
         <header>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Dashboard de Performance</h1>
           <p className="text-gray-500 mt-1">Análise detalhada dos seus resultados em apostas.</p>
@@ -286,27 +333,25 @@ export default function AnaliseResultados() {
             {diasNoMes.map(({ key, dia, isCurrentMonth, dados }) => (
               <div key={key} onClick={() => handleOpenModal(key)} className={`h-28 sm:h-32 p-1 sm:p-2 border rounded-md flex flex-col text-left ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'} ${dados ? 'cursor-pointer hover:border-gray-400' : ''} transition-all duration-200`}>
                 {isCurrentMonth && (<>
-                    <span className="font-bold text-gray-600 text-sm">{dia}</span>
-                    {dados && (
-                      <div className={`mt-1 p-2 rounded-md w-full flex-grow flex flex-col justify-center ${dados.pnlTotal >= 0 ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
-                        
-                        {/* === BLOCO DE CÓDIGO ALTERADO ABAIXO === */}
-                        {dados.stakeTotal > 0 ? (
-                          <>
-                            <p className="font-bold text-base sm:text-lg leading-tight">{`${((dados.pnlTotal / dados.stakeTotal) * 100).toFixed(1)}%`}</p>
-                            <p className="text-xs opacity-80">ROI Dia</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-bold text-base sm:text-lg leading-tight">{dados.pnlTotal > 0 ? 'LUCRO' : 'PERDA'}</p>
-                            <p className="text-xs opacity-80">Aposta Grátis</p>
-                          </>
-                        )}
-                        {/* === FIM DO BLOCO ALTERADO === */}
-                        
-                        <p className="text-xs opacity-80 mt-1">{dados.totalApostas} {dados.totalApostas > 1 ? 'apostas' : 'aposta'}</p>
-                      </div>
-                    )}
+                  <span className="font-bold text-gray-600 text-sm">{dia}</span>
+                  {dados && (
+                    <div className={`mt-1 p-2 rounded-md w-full flex-grow flex flex-col justify-center ${dados.pnlTotal >= 0 ? 'bg-blue-500 text-white' : 'bg-red-500 text-white'}`}>
+                      
+                      {dados.stakeTotal > 0 ? (
+                        <>
+                          <p className="font-bold text-base sm:text-lg leading-tight">{`${((dados.pnlTotal / dados.stakeTotal) * 100).toFixed(1)}%`}</p>
+                          <p className="text-xs opacity-80">ROI Dia</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-bold text-base sm:text-lg leading-tight">{dados.pnlTotal > 0 ? 'LUCRO' : 'PERDA'}</p>
+                          <p className="text-xs opacity-80">Aposta Grátis</p>
+                        </>
+                      )}
+                      
+                      <p className="text-xs opacity-80 mt-1">{dados.totalApostas} {dados.totalApostas > 1 ? 'apostas' : 'aposta'}</p>
+                    </div>
+                  )}
                 </>)}
               </div>
             ))}
@@ -324,11 +369,11 @@ export default function AnaliseResultados() {
                     data: lineData,
                     borderColor: '#059669',
                     backgroundColor: (context) => {
-                       const ctx = context.chart.ctx;
-                       const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-                       gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
-                       gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
-                       return gradient;
+                      const ctx = context.chart.ctx;
+                      const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+                      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+                      gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                      return gradient;
                     },
                     tension: 0.3,
                     pointRadius: 2,
