@@ -7,6 +7,11 @@ import { motion } from 'framer-motion';
 import { DominanceBar } from './DominanceBar';
 import { GameTimelineChart } from './GameTimelineChart';
 
+const ALLOWED_LEAGUE_IDS = [
+    2, 3, 4, 5, 7, 9, 13, 14, 15, 11, 20, 21, 22, 24, 27, 31, 32, 37, 39, 40, 41, 42, 43, 45, 47, 48, 49, 50, 51, 66, 72, 73, 79, 84, 92, 96, 97, 98, 101, 102, 103, 106, 107, 108, 109, 114, 119, 120, 122, 123, 124, 125, 126, 128, 129, 130, 131, 136, 137, 140, 141, 163, 173, 174, 175, 176, 177, 178, 179, 182, 181, 184, 185, 135, 136, 203, 204, 212, 219, 220, 229, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 255, 256, 257, 262, 264, 271, 272, 282, 283, 281, 284, 285, 286, 292, 293, 294, 295, 304, 328, 329, 334, 345, 346, 347, 358, 366, 367, 392, 489, 78, 473, 474, 491, 501, 503, 523, 527, 531, 550, 558, 559, 633, 638, 497, 519, 529, 555, 556, 557, 592, 593, 548, 657, 702, 713, 722, 727, 760, 770, 772, 803, 807, 810, 4330, 4395, 4888, 4400, 79, 61, 62, 94, 88, 71, 72, 144, 147, 253, 113, 207, 208, 307, 203, 218, 15, 1, 2146, 2154
+];
+
+
 // NOVO COMPONENTE SKELETON - Para o estado de carregamento
 const StatsSkeleton = () => (
     <div className="space-y-1.5 p-1 animate-pulse">
@@ -481,7 +486,12 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
 
 // --- Componente Principal ---
 export default function ScannerCliente({ initialData }: { initialData: any }) {
-    const [liveGames, setLiveGames] = useState(initialData?.liveGames || []);
+    // CORREÇÃO 1: O estado inicial AGORA é filtrado
+    const [liveGames, setLiveGames] = useState(() => {
+        if (!initialData?.liveGames) return [];
+        return initialData.liveGames.filter(game => ALLOWED_LEAGUE_IDS.includes(game.league.id));
+    });
+
     const [selectedLeague, setSelectedLeague] = useState('all');
     const [pinnedGameIds, setPinnedGameIds] = useState<number[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -494,7 +504,11 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
                 const response = await fetch('/api/live-scanner');
                 if (!response.ok) return;
                 const data = await response.json();
-                setLiveGames(data.liveGames || []);
+
+                // CORREÇÃO 2: O filtro também é aplicado nas atualizações
+                const filteredGames = data.liveGames.filter(game => ALLOWED_LEAGUE_IDS.includes(game.league.id));
+                
+                setLiveGames(filteredGames || []);
             } catch (error) { console.error("Falha ao atualizar jogos ao vivo:", error); }
         };
         const intervalId = setInterval(fetchLiveGames, 60000);
@@ -552,7 +566,7 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
         return (
             <div className="flex flex-col items-center justify-center text-center p-10 bg-white rounded-lg shadow-md">
                 <Clock className="w-12 h-12 text-blue-500 mb-4" />
-                <h2 className="text-xl font-semibold text-gray-800">Nenhum jogo ao vivo no momento.</h2>
+                <h2 className="text-xl font-semibold text-gray-800">Nenhum jogo ao vivo nos campeonatos selecionados.</h2>
                 <p className="text-gray-500 mt-2">A página irá atualizar automaticamente quando uma partida começar.</p>
             </div>
         );
