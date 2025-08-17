@@ -173,7 +173,6 @@ function ConfrontoView() {
         };
     }, [comparisonData]);
 
-    // MUDANÇA: Lista de todos os métodos agora inclui as 4 novas estratégias
     const todosOsMetodos = [
         {
             nome: "ENTRADA LAY 0X1",
@@ -220,30 +219,40 @@ function ConfrontoView() {
                 { tipoDeAnalise: 'h2h', time: 'casa', metrica: 'Vitórias em Casa (%)', operador: '>=', valor: 60 },
             ]
         },
+                // 👇 INCLUSÃO DO MÉTODO: Lay 3x0 - PRÉ-LIVE 👇
         {
-            nome: "Back Casa - PRÉ-LIVE",
-            fraseFinal: "Análise pré-live indica favoritismo para o time da casa.",
+            nome: "Jogo para entrada em Lay 3x0 - PRÉ-LIVE",
+            fraseFinal: "Análise indica favoritismo do visitante e probabilidade de gols.",
             condicoes: [
+                { tipoDeAnalise: 'comparacao_odds', comparacao: 'visitante_menor_igual_casa', texto: 'Odd Visitante <= Odd Casa' },
+                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Marcou Gol no FT (%)', operador: '>=', valor: 80 },
+                { tipoDeAnalise: 'geral', time: 'casa', metrica: 'Sofreu Gol no FT (%)', operador: '>=', valor: 50 },
+                { tipoDeAnalise: 'media_times', metrica: 'Jogos Over 1.5 FT (%)', operador: '>=', valor: 60 },
+                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Vitórias Fora (%)', operador: '>=', valor: 60 },
+            ]
+        },
+        // 👇 INCLUSÃO DO MÉTODO: Over 1.5 FT - LIVE 👇
+        {
+            nome: "Jogo para entrada em Over 1.5 FT - LIVE",
+            fraseFinal: "Jogo com forte tendência a gols, especialmente no primeiro tempo.",
+            condicoes: [
+                { tipoDeAnalise: 'geral', time: 'casa', metrica: 'Jogos Over 1.5 FT (%)', operador: '>=', valor: 80 },
                 { tipoDeAnalise: 'geral', time: 'casa', metrica: 'Marcou Gol no HT (%)', operador: '>=', valor: 60 },
-                { tipoDeAnalise: 'geral', time: 'casa', metrica: 'Marcou Gol no FT (%)', operador: '>=', valor: 60 },
-                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Marcou Gol no FT (%)', operador: '<=', valor: 60 },
-                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Sofreu Gol no HT (%)', operador: '>=', valor: 60 },
-                { tipoDeAnalise: 'geral', time: 'casa', metrica: 'Ambas Marcam (%)', operador: '>=', valor: 50 },
-                { tipoDeAnalise: 'h2h', time: 'casa', metrica: 'Ambas Marcam (%)', operador: '>=', valor: 50 },
-                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Ambas Marcam (%)', operador: '>=', valor: 50 },
-                { tipoDeAnalise: 'h2h', time: 'visitante', metrica: 'Ambas Marcam (%)', operador: '>=', valor: 50 },
+                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Jogos Over 1.5 FT (%)', operador: '>=', valor: 60 },
+                { tipoDeAnalise: 'geral', time: 'visitante', metrica: 'Marcou Gol no HT (%)', operador: '>=', valor: 50 },
+                { tipoDeAnalise: 'ambos_times', metrica: 'Ambas Marcam (%)', operador: '>=', valor: 50 },
             ]
         },
     ];
 
     const metodosAtivados = useMemo(() => {
         const ativados: any[] = [];
-        if (!homeStats || !awayStats) return ativados;
+        if (!homeStats || !awayStats || !comparisonData?.odds) return ativados;
 
         const statsGeral = { casa: homeStats, visitante: awayStats };
         const statsH2H = { casa: h2hHomeStats, visitante: h2hAwayStats };
         
-        const matchWinnerBet = comparisonData?.odds?.bookmakers[0]?.bets.find((bet: any) => bet.name === 'Match Winner');
+        const matchWinnerBet = comparisonData.odds.bookmakers[0]?.bets.find((bet: any) => bet.name === 'Match Winner');
         const oddsData = {
             casa: { Odd: parseFloat(matchWinnerBet?.values.find((v: any) => v.value === 'Home')?.odd || '0') },
             visitante: { Odd: parseFloat(matchWinnerBet?.values.find((v: any) => v.value === 'Away')?.odd || '0') },
@@ -253,30 +262,46 @@ function ConfrontoView() {
             let todasAsCondicoesBatem = true;
             
             for (const condicao of metodo.condicoes) {
-                let dados;
-                let valorDaEstatistica;
                 let resultado = false;
 
-                // MUDANÇA: Lógica de verificação agora inclui 'comparacao_odds'
+                // LÓGICA DE VERIFICAÇÃO ATUALIZADA PARA INCLUIR NOVOS TIPOS DE ANÁLISE
                 if (condicao.tipoDeAnalise === 'comparacao_odds') {
-                    if (oddsData.casa.Odd && oddsData.visitante.Odd && oddsData.casa.Odd > 0) {
+                    if (oddsData.casa.Odd > 0 && oddsData.visitante.Odd > 0) {
                         if (condicao.comparacao === 'casa_menor_igual_visitante') {
                             resultado = oddsData.casa.Odd <= oddsData.visitante.Odd;
+                        } else if (condicao.comparacao === 'visitante_menor_igual_casa') {
+                            resultado = oddsData.visitante.Odd <= oddsData.casa.Odd;
                         }
                     }
-                } else {
+                } else if (condicao.tipoDeAnalise === 'media_times') {
+                    const homeVal = Number(statsGeral.casa[condicao.metrica as keyof typeof homeStats] || 0);
+                    const awayVal = Number(statsGeral.visitante[condicao.metrica as keyof typeof awayStats] || 0);
+                    const media = (homeVal + awayVal) / 2;
+                    if (condicao.operador === '>=') resultado = media >= condicao.valor;
+                } else if (condicao.tipoDeAnalise === 'ambos_times') {
+                    const homeVal = Number(statsGeral.casa[condicao.metrica as keyof typeof homeStats] || 0);
+                    const awayVal = Number(statsGeral.visitante[condicao.metrica as keyof typeof awayStats] || 0);
+                    if (condicao.operador === '>=') resultado = homeVal >= condicao.valor && awayVal >= condicao.valor;
+                }
+                else {
+                    let dados;
                     switch(condicao.tipoDeAnalise) {
                         case 'geral': dados = statsGeral; break;
                         case 'h2h': dados = statsH2H; break;
                         case 'odds': dados = oddsData; break;
                     }
 
-                    if (!dados?.casa || !dados?.visitante) {
-                        todasAsCondicoesBatem = false;
-                        break;
+                    if ( (condicao.tipoDeAnalise === 'h2h' && (!dados?.casa || !dados?.visitante)) || !dados) {
+                         // Se for H2H e não houver dados, não invalida o método, apenas pula a condição
+                         if (condicao.tipoDeAnalise === 'h2h') {
+                            resultado = true; // Pula a checagem H2H se não houver dados
+                            continue;
+                         }
+                         todasAsCondicoesBatem = false;
+                         break;
                     }
 
-                    valorDaEstatistica = Number(dados[condicao.time as keyof typeof dados]?.[condicao.metrica as keyof typeof homeStats]);
+                    const valorDaEstatistica = Number(dados[condicao.time as keyof typeof dados]?.[condicao.metrica as keyof typeof homeStats]);
                     
                     switch (condicao.operador) {
                         case '>=': resultado = valorDaEstatistica >= condicao.valor; break;
@@ -341,6 +366,10 @@ function ConfrontoView() {
                                                         <CheckCircle2 className="w-4 h-4 mr-2 flex-shrink-0 text-emerald-500" />
                                                         {cond.tipoDeAnalise === 'comparacao_odds' ? (
                                                             <span className="font-semibold">Odds: {cond.texto}</span>
+                                                        ) : cond.tipoDeAnalise === 'media_times' ? (
+                                                            <span className="font-semibold">Média dos Times - {cond.metrica.replace(' (%)', '')} {cond.operador} {cond.valor}%</span>
+                                                        ) : cond.tipoDeAnalise === 'ambos_times' ? (
+                                                            <span className="font-semibold">Ambos os Times - {cond.metrica.replace(' (%)', '')} {cond.operador} {cond.valor}%</span>
                                                         ) : (
                                                             <>
                                                                 <span className="font-semibold">{cond.tipoDeAnalise === 'h2h' ? 'H2H' : cond.tipoDeAnalise === 'odds' ? 'Odds' : 'Geral'}:</span>
