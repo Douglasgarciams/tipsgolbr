@@ -18,7 +18,8 @@ async function fetchRapidAPI(path: string, params: Record<string, any> = {}) {
   });
 
   if (!res.ok) {
-    console.error(`Erro na API para ${path}: ${res.status}`);
+    // Retornar o status do erro ajuda a debugar
+    console.error(`Erro na API para ${path} com params ${JSON.stringify(params)}. Status: ${res.status}`);
     return null;
   }
   return res.json();
@@ -33,21 +34,26 @@ export async function GET() {
       return NextResponse.json({ liveGames: [] });
     }
 
-    // Para cada jogo ao vivo, busca as estatísticas E os eventos
-    const gamesWithDetails = await Promise.all(
-      liveFixtures.map(async (game: any) => {
-        const [statsRes, eventsRes] = await Promise.all([
-            fetchRapidAPI("fixtures/statistics", { fixture: game.fixture.id }),
-            fetchRapidAPI("fixtures/events", { fixture: game.fixture.id }) // <-- ADICIONADO
-        ]);
-        
-        return {
-          ...game,
-          statistics: statsRes?.response || [],
-          events: eventsRes?.response || [], // <-- ADICIONADO
-        };
-      })
-    );
+    // Alteração Principal: Trocamos Promise.all por um loop for...of
+    const gamesWithDetails = [];
+    
+    for (const game of liveFixtures) {
+      // Busca os detalhes de um único jogo
+      const [statsRes, eventsRes] = await Promise.all([
+          fetchRapidAPI("fixtures/statistics", { fixture: game.fixture.id }),
+          fetchRapidAPI("fixtures/events", { fixture: game.fixture.id })
+      ]);
+      
+      gamesWithDetails.push({
+        ...game,
+        statistics: statsRes?.response || [],
+        events: eventsRes?.response || [],
+      });
+      
+      // Pausa CRÍTICA para evitar o erro 429 (Rate Limiting)
+      // 500ms = meio segundo. Aumente se os erros persistirem.
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+    }
     
     return NextResponse.json({ liveGames: gamesWithDetails });
 
