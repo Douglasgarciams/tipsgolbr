@@ -31,9 +31,9 @@ export async function POST(request, { params }) {
     try {
         const userId = parseInt(params.id);
 
-        // Calcula a data de expiração para 30 dias a partir de hoje
+        // Calcula a data de expiração para 32 dias a partir de hoje
         const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 30);
+        expiryDate.setDate(expiryDate.getDate() + 32);
 
         // Atualiza o usuário no banco de dados
         const updatedUser = await prisma.user.update({

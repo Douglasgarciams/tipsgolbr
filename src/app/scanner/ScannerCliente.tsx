@@ -522,6 +522,7 @@ export default function ScannerCliente({ initialData }: { initialData: any }) {
 
     const sortedAndFilteredGames = useMemo(() => {
         let games = liveGames;
+        games = games.filter(game => game.statistics && game.statistics.length > 0 && game.statistics.some(s => s.statistics.length > 0));
         if (selectedLeague !== 'all') {
             games = games.filter((game: any) => game.league.id.toString() === selectedLeague);
         }
