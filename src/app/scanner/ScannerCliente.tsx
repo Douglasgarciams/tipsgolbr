@@ -306,12 +306,12 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
 
 
         if (
-            elapsed >= 10 && elapsed <= 60 && 
+            elapsed >= 10 && elapsed <= 50 && 
             game.goals.home === game.goals.away && 
-            homeIPO > (awayIPO * 1.5) && 
+            homeIPO > (awayIPO * 1.0) && 
             stats.homeTotalShots > (stats.awayTotalShots * 2) && 
-            stats.homeShotsOnGoal >= 4 && 
-            stats.homeCorners > (stats.awayCorners + 2) 
+            stats.homeShotsOnGoal >= 2 && 
+            stats.homeCorners > (stats.awayCorners + 1) 
         ) {
             return {
                 type: 'Back Casa (Domínio total)',
@@ -322,10 +322,10 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
 
         if (
             elapsed < 25 &&
-            stats.homeTotalShots === 4 &&
+            stats.homeTotalShots === 2 &&
             stats.homeShotsOnGoal >= 2 &&
             stats.awayShotsOnGoal === 2 &&
-            homeDominancePercentage > 55 &&
+            homeDominancePercentage > 45 &&
             awayDominancePercentage < 45
         ) {
             return {
@@ -348,6 +348,23 @@ const LiveGameCard = ({ game, isPinned, onPin }: { game: any, isPinned: boolean,
                 color: 'green'
             };
         }
+
+        if (
+        elapsed < 25 &&
+        totalGoals === 0 &&
+        stats.homeShotsOnGoal >= 2 &&
+        stats.homeTotalShots >= 2 &&
+        stats.awayShotsOnGoal >= 2 &&
+        stats.awayTotalShots >= 2 &&
+        stats.homePressure > 10 && // Valor de pressão mínima, ajuste se necessário
+        stats.awayPressure > 10   // Valor de pressão mínima, ajuste se necessário
+    ) {
+        return {
+            type: 'Over 1.5 FT (Início movimentado)',
+            text: 'Jogo 0x0, mas com ambos os times criando e finalizando bem. Boa tendência para gols.',
+            color: 'blue'
+        };
+    }
 
         if (
             elapsed > 15 && elapsed <= 30 &&
