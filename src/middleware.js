@@ -10,11 +10,17 @@ const getJwtSecretKey = () => {
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  // 👇 ADICIONE ESTA LÓGICA PARA TRATAR A ROTA
+  // Remove a barra final, a menos que seja a única barra (rota raiz)
+  const normalizedPathname = pathname.endsWith('/') && pathname.length > 1 
+    ? pathname.slice(0, -1) 
+    : pathname;
+
   // ALTERADO AQUI: Adicionado '/contato' às rotas públicas
   const publicRoutes = ['/login', '/cadastro', '/assinatura', '/forgot-password', '/reset-password', '/aulas', '/contato']; 
 
   // Se a rota for pública, deixa passar direto
-  if (publicRoutes.includes(pathname)) {
+  if (publicRoutes.includes(normalizedPathname)) {
     return NextResponse.next();
   }
 
