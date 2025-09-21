@@ -50,21 +50,6 @@ export default async function HomePage() {
           >
             Planilha/Grafico
             </Link>
-            {/* 👇 BOTÃO ADICIONADO 👇 */}
-          <Link
-            href="/jogos-do-dia"
-            className="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
-          >
-            Análise Jogos
-            </Link>
-
-            {/* 👇 BOTÃO ADICIONADO 👇 */}
-            <Link
-            href="/scanner"
-            className="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
-          >
-            Scanner
-        </Link>
         </div>
 
       </div>
