@@ -50,6 +50,13 @@ export default async function HomePage() {
           >
             Planilha/Grafico
             </Link>
+        {/* ### BOTÃO ADICIONADO AQUI ### */}
+            <Link
+              href="/sorteio"
+              className="inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-lg"
+            >
+              Sorteio
+            </Link>
         </div>
 
       </div>

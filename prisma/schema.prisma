@@ -129,3 +129,10 @@ model PasswordResetToken {
   createdAt   DateTime @default(now()) // Quando o token foi criado
   usedAt      DateTime? // Quando o token foi usado (para invalidá-lo)
 }
+model Sorteio {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique // Garante que cada e-mail só se inscreva uma vez
+  whatsapp  String
+  createdAt DateTime @default(now())
+}
