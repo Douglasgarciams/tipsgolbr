@@ -16,7 +16,7 @@ export default function AssinaturaPage() {
       <div className="bg-gray-800 p-8 md:p-12 rounded-lg shadow-lg max-w-lg">
         <h1 className="text-3xl font-bold text-red-500 mb-4">Acesso Negado</h1>
         <p className="text-lg text-gray-300 mb-8">
-          Sua assinatura não está ativa ou expirou, acesse a caixa de entrada do seu e-mail ou nos spam, e efetuei o pagamento através do link encaminhado. Dúvidas? Entre em contato conosco: tipsgolbr@gmail.com
+          Sua assinatura não está ativa ou expirou, efetuei o pagamento através do link encaminhado no -email Dúvidas? Entre em contato conosco: tipsgolbr@gmail.com - whatsapp: 67981421017
         </p>
         <button 
           onClick={() => router.push('/login')} 
