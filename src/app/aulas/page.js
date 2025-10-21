@@ -31,6 +31,10 @@ export default function AulasPage() {
 
   const aulasMetodos = [
     {
+      titulo: "Métodos: Lay 0X1 - Lay 0X2 - Lay 0X3 - Sua referência no mercado Correct score.",
+      video: "https://www.youtube.com/embed/b_rQnxPzl8c?si=5MgmITiSpzpXYZ5s",
+    },
+    {
       titulo: "Lay 0x0",
       video: "https://www.youtube.com/embed/QDOVIYMwVj4?si=6-Sii0YSbhZlO1Cx",
     },
